@@ -193,6 +193,40 @@ class HFGenerator:
             # If anything fails, return original inputs
             return inputs
 
+    def _build_generation_kwargs(
+        self,
+        max_new_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        do_sample: Optional[bool] = None,
+        repetition_penalty: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """
+        Build generation kwargs from method parameters and config defaults.
+        This centralizes the parameter resolution logic used by both generate() and stream_generate().
+        """
+        gen_kwargs: Dict[str, Any] = {
+            "max_new_tokens": max_new_tokens or self.config.max_new_tokens,
+            "temperature": temperature if temperature is not None else self.config.temperature,
+            "top_p": top_p if top_p is not None else self.config.top_p,
+            "do_sample": do_sample if do_sample is not None else self.config.do_sample,
+            "eos_token_id": self.eos_token_id,
+            "pad_token_id": self.pad_token_id,
+        }
+        
+        # Only add top_k if specified (either in params or config)
+        if top_k is not None or self.config.top_k is not None:
+            gen_kwargs["top_k"] = top_k if top_k is not None else self.config.top_k
+            
+        # Only add repetition_penalty if specified (either in params or config)
+        if repetition_penalty is not None or self.config.repetition_penalty is not None:
+            gen_kwargs["repetition_penalty"] = (
+                repetition_penalty if repetition_penalty is not None else self.config.repetition_penalty
+            )
+            
+        return gen_kwargs
+
     def generate(
         self,
         prompt_or_messages: Union[str, List[Dict[str, str]]],
@@ -210,20 +244,14 @@ class HFGenerator:
         inputs = self._build_inputs(prompt_or_messages)
         inputs = self._maybe_move_inputs_to_model_device(inputs)
 
-        gen_kwargs: Dict[str, Any] = {
-            "max_new_tokens": max_new_tokens or self.config.max_new_tokens,
-            "temperature": temperature if temperature is not None else self.config.temperature,
-            "top_p": top_p if top_p is not None else self.config.top_p,
-            "do_sample": do_sample if do_sample is not None else self.config.do_sample,
-            "eos_token_id": self.eos_token_id,
-            "pad_token_id": self.pad_token_id,
-        }
-        if top_k is not None or self.config.top_k is not None:
-            gen_kwargs["top_k"] = top_k if top_k is not None else self.config.top_k
-        if repetition_penalty is not None or self.config.repetition_penalty is not None:
-            gen_kwargs["repetition_penalty"] = (
-                repetition_penalty if repetition_penalty is not None else self.config.repetition_penalty
-            )
+        gen_kwargs = self._build_generation_kwargs(
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            do_sample=do_sample,
+            repetition_penalty=repetition_penalty,
+        )
 
         outputs = self.model.generate(**inputs, **gen_kwargs)
 
@@ -248,20 +276,14 @@ class HFGenerator:
         inputs = self._build_inputs(prompt_or_messages)
         inputs = self._maybe_move_inputs_to_model_device(inputs)
 
-        gen_kwargs: Dict[str, Any] = {
-            "max_new_tokens": max_new_tokens or self.config.max_new_tokens,
-            "temperature": temperature if temperature is not None else self.config.temperature,
-            "top_p": top_p if top_p is not None else self.config.top_p,
-            "do_sample": do_sample if do_sample is not None else self.config.do_sample,
-            "eos_token_id": self.eos_token_id,
-            "pad_token_id": self.pad_token_id,
-        }
-        if top_k is not None or self.config.top_k is not None:
-            gen_kwargs["top_k"] = top_k if top_k is not None else self.config.top_k
-        if repetition_penalty is not None or self.config.repetition_penalty is not None:
-            gen_kwargs["repetition_penalty"] = (
-                repetition_penalty if repetition_penalty is not None else self.config.repetition_penalty
-            )
+        gen_kwargs = self._build_generation_kwargs(
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            do_sample=do_sample,
+            repetition_penalty=repetition_penalty,
+        )
 
         streamer = TextIteratorStreamer(
             self.tokenizer,

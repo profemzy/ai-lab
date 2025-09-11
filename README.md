@@ -1,4 +1,4 @@
-# Labs — Local LLM generation (CLI + FastAPI)
+# AI Labs — OpenAI-Compatible Local LLM Inference Server
 
 This repository provides:
 - A core generator built on Hugging Face Transformers with sensible NVIDIA GPU defaults

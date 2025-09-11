@@ -226,46 +226,20 @@ def load_config(path: Optional[str] = None) -> GenerationConfig:
         except Exception:
             pass
 
-    # Handle model profiles
-    model_profiles = data.get("model_profiles", {})
-    active_profile = model_profiles.get("active_profile", "")
-    
-    if active_profile and active_profile in model_profiles:
-        profile = model_profiles[active_profile]
-        if isinstance(profile, dict):
-            # Apply profile settings
-            if "model_name" in profile:
-                model_name = str(profile["model_name"])
-    
-    # Check generation table for model name (fallback only if no active profile)
+    # Check generation table for model name
     gen_tbl = data.get("generation") or data.get("model") or {}
-    if isinstance(gen_tbl, dict) and "model_name" in gen_tbl and not active_profile:
+    if isinstance(gen_tbl, dict) and "model_name" in gen_tbl:
         model_name = str(gen_tbl["model_name"])
 
-    # Check environment override again (highest priority)
+    # Check environment override (highest priority)
     model_name = os.getenv("LABS_MODEL", model_name)
     
     # Create config with determined model name
     cfg = GenerationConfig(model_name=model_name)
 
-    # Apply profile quantization settings if available
-    if active_profile and active_profile in model_profiles:
-        profile = model_profiles[active_profile]
-        if isinstance(profile, dict):
-            if "load_in_4bit" in profile:
-                cfg.load_in_4bit = bool(profile["load_in_4bit"])
-            if "load_in_8bit" in profile:
-                cfg.load_in_8bit = bool(profile["load_in_8bit"])
-
-    # Merge tables from config file (but don't override model_name if we have an active profile)
+    # Merge tables from config file
     if isinstance(gen_tbl, dict):
-        # Temporarily remove model_name if we have an active profile to prevent override
-        if active_profile and "model_name" in gen_tbl:
-            temp_model_name = cfg.model_name
-            _merge_generation_table(cfg, gen_tbl)
-            cfg.model_name = temp_model_name  # Restore profile model name
-        else:
-            _merge_generation_table(cfg, gen_tbl)
+        _merge_generation_table(cfg, gen_tbl)
 
     q_tbl = data.get("quantization") or {}
     if isinstance(q_tbl, dict):

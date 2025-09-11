@@ -69,17 +69,17 @@ LABS_HOST=0.0.0.0 LABS_PORT=8000 uv run labs-api
 curl -s http://localhost:8000/health
 ```
 
-### OpenAI-Compatible API Examples
+### API Examples
 
 ```bash
 # List available models
 curl -s http://localhost:8000/v1/models
 
-# Chat completion
+# Chat completion (use exact model name from .env)
 curl -s -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openai/gpt-oss-20b",
+    "model": "mistralai/Mistral-7B-Instruct-v0.1",
     "messages": [{"role": "user", "content": "Explain BF16 in one sentence"}],
     "max_tokens": 64
   }'
@@ -88,7 +88,7 @@ curl -s -X POST http://localhost:8000/v1/chat/completions \
 curl -N -s -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openai/gpt-oss-20b",
+    "model": "mistralai/Mistral-7B-Instruct-v0.1",
     "messages": [{"role": "user", "content": "Tell me a joke"}],
     "max_tokens": 64,
     "stream": true
@@ -165,48 +165,45 @@ export LABS_PORT=8000                 # Server port
 
 ### Model Switching
 
-The system supports easy model switching through model profiles in `labs.toml`:
+The system supports flexible model switching through environment variables:
 
-#### Available Model Profiles
+#### Environment Variables (Recommended)
 
-```toml
-[model_profiles]
-# Available model configurations
-qwen = { model_name = "Qwen/Qwen2.5-7B-Instruct", load_in_4bit = false, load_in_8bit = false }
-gpt_oss = { model_name = "openai/gpt-oss-20b", load_in_4bit = true, load_in_8bit = false }
+The simplest way to switch models is by editing the `.env` file:
 
-# Active model profile (change this to switch models)
-active_profile = "qwen"
+```bash
+# Edit .env file
+LABS_MODEL=mistralai/Mistral-7B-v0.1
+
+# Or set temporarily for a single session
+export LABS_MODEL="Qwen/Qwen2.5-7B-Instruct"
+uv run labs-gen --prompt "Hello!"
 ```
 
-#### How to Switch Models
+**Popular Model Examples:**
+```bash
+# Mistral 7B (good balance of performance and memory usage)
+LABS_MODEL=mistralai/Mistral-7B-v0.1
 
-1. **Edit `labs.toml`**: Change the `active_profile` value:
-   ```toml
-   # Switch to GPT-OSS-20B model
-   active_profile = "gpt_oss"
-   
-   # Switch to Qwen model  
-   active_profile = "qwen"
-   ```
+# Qwen 2.5 7B Instruct (excellent instruction following)
+LABS_MODEL=Qwen/Qwen2.5-7B-Instruct
 
-2. **Add Custom Profiles**: Define your own model configurations:
-   ```toml
-   [model_profiles]
-   # Add a new model profile
-   mistral = { model_name = "mistralai/Mistral-7B-Instruct-v0.3", load_in_4bit = false, load_in_8bit = false }
-   llama = { model_name = "meta-llama/Llama-2-7b-chat-hf", load_in_4bit = true, load_in_8bit = false }
-   
-   # Set as active
-   active_profile = "mistral"
-   ```
+# Llama 2 7B Chat (Meta's chat model)
+LABS_MODEL=meta-llama/Llama-2-7b-chat-hf
 
-3. **Override via Environment**: Use environment variables for temporary changes:
-   ```bash
-   # Override model for single session
-   export LABS_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
-   uv run labs-gen --prompt "Hello!"
-   ```
+# CodeLlama for code generation
+LABS_MODEL=codellama/CodeLlama-7b-Instruct-hf
+```
+
+#### Configuration File Fallback
+
+If no environment variable is set, the system will use the default model specified in `labs.toml`:
+
+```toml
+[generation]
+# Default model (typically overridden by .env file)
+model_name = "Qwen/Qwen2.5-7B-Instruct"
+```
 
 #### Memory Considerations
 
@@ -235,23 +232,16 @@ uv run labs-gen --messages-json '[{"role":"user","content":"Write a greeting."}]
 uv run labs-gen --messages-json "@/path/to/messages.json"
 ```
 
-## 🔌 OpenAI API Compatibility
+## 🔌 API Compatibility
 
-The API provides OpenAI-compatible endpoints that can be used as a drop-in replacement with most OpenAI clients:
+The API provides OpenAI-compatible endpoints for seamless integration:
 
 ### Supported Endpoints
 
 - **`GET /v1/models`** - List available models
 - **`POST /v1/chat/completions`** - Create chat completions (streaming and non-streaming)
 
-### Model Name Mapping
-
-- `gpt-3.5-turbo` → `openai/gpt-oss-20b`
-- `gpt-4` → `openai/gpt-oss-20b`
-- `gpt-oss-20b` → `openai/gpt-oss-20b`
-- Or use the full model name directly: `openai/gpt-oss-20b`
-
-### OpenAI Client Usage Example
+### Client Usage Example
 
 ```python
 import openai
@@ -262,7 +252,7 @@ client = openai.OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",  # Maps to your local GPT-OSS-20B model
+    model="mistralai/Mistral-7B-Instruct-v0.1",  # Use exact model name from your .env
     messages=[{"role": "user", "content": "Hello!"}],
     max_tokens=100
 )
@@ -270,7 +260,7 @@ response = client.chat.completions.create(
 
 ### Supported Parameters
 
-- **`model`** - Model name (with automatic mapping)
+- **`model`** - Exact HuggingFace model name (as configured in .env)
 - **`messages`** - Chat messages array
 - **`max_tokens`** - Maximum tokens to generate
 - **`temperature`** - Sampling temperature (0.0-2.0)
@@ -301,7 +291,7 @@ uv run labs-gen --prompt "Tell me a story" --stream
 # Enable Server-Sent Events (SSE) streaming
 curl -N -s -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello"}], "stream": true}'
+  -d '{"model": "mistralai/Mistral-7B-Instruct-v0.1", "messages": [{"role": "user", "content": "Hello"}], "stream": true}'
 ```
 
 > **Note**: Streaming responses use OpenAI-compatible SSE format with `data:` prefixed JSON chunks.

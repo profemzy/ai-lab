@@ -152,25 +152,12 @@ def _startup_preload() -> None:
         pass
 
 
-def _map_model_name(openai_model: str) -> str:
-    """Map OpenAI model names to actual HuggingFace model names"""
-    model_mapping = {
-        "gpt-3.5-turbo": "openai/gpt-oss-20b",
-        "gpt-4": "openai/gpt-oss-20b",
-        "gpt-oss-20b": "openai/gpt-oss-20b",
-        "qwen2.5-7b-instruct": "Qwen/Qwen2.5-7B-Instruct",  # Keep for backward compatibility
-        "qwen": "Qwen/Qwen2.5-7B-Instruct",  # Keep for backward compatibility
-    }
-    return model_mapping.get(openai_model, openai_model)
-
-
 def _build_generator(req: ChatCompletionRequest) -> HFGenerator:
-    """Build generator from OpenAI-compatible request"""
+    """Build generator from request"""
     cfg = load_config(None)
     
-    # Map model name
-    actual_model = _map_model_name(req.model)
-    cfg.model_name = actual_model
+    # Use exact model name from request
+    cfg.model_name = req.model
     
     # Apply request parameters
     if req.max_tokens is not None:
@@ -207,27 +194,16 @@ def _estimate_tokens(text: str) -> int:
 
 @app.get("/v1/models")
 def list_models() -> ModelListResponse:
-    """List available models (OpenAI-compatible)"""
+    """List available models"""
     cfg = load_config(None)
     current_time = int(time.time())
     
+    # Return only the currently configured model
     models = [
-        ModelInfo(id="gpt-3.5-turbo", created=current_time),
-        ModelInfo(id="gpt-4", created=current_time),
-        ModelInfo(id="gpt-oss-20b", created=current_time),
-        ModelInfo(id="qwen2.5-7b-instruct", created=current_time),  # Backward compatibility
         ModelInfo(id=cfg.model_name, created=current_time),
     ]
     
-    # Remove duplicates
-    seen = set()
-    unique_models = []
-    for model in models:
-        if model.id not in seen:
-            seen.add(model.id)
-            unique_models.append(model)
-    
-    return ModelListResponse(data=unique_models)
+    return ModelListResponse(data=models)
 
 
 @app.post("/v1/chat/completions", response_model=None)

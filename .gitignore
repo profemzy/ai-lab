@@ -12,3 +12,5 @@ wheels/
 # Local environment files
 .env
 .env.local
+.idea/
+.vscode/

@@ -15,6 +15,7 @@ from transformers import TextIteratorStreamer
 
 from labs import GenerationConfig, HFGenerator
 from labs.config import load_config
+from labs.embeddings import get_embedding_generator
 
 
 # OpenAI-compatible request/response models
@@ -94,6 +95,44 @@ class ModelInfo(BaseModel):
 class ModelListResponse(BaseModel):
     object: str = "list"
     data: List[ModelInfo]
+
+
+# Embedding request/response models
+class EmbeddingRequest(BaseModel):
+    input: Union[str, List[str]] = Field(..., description="Text to embed")
+    model: str = Field(default="google/embeddinggemma-300m", description="Embedding model to use")
+    encoding_format: Optional[str] = Field(default="float", description="Encoding format (float or base64)")
+    dimensions: Optional[int] = Field(default=None, description="Number of dimensions (not supported)")
+
+
+class EmbeddingData(BaseModel):
+    object: str = "embedding"
+    embedding: List[float]
+    index: int
+
+
+class EmbeddingUsage(BaseModel):
+    prompt_tokens: int
+    total_tokens: int
+
+
+class EmbeddingResponse(BaseModel):
+    object: str = "list"
+    data: List[EmbeddingData]
+    model: str
+    usage: EmbeddingUsage
+
+
+# Similarity request/response models
+class SimilarityRequest(BaseModel):
+    sentences: List[str] = Field(..., description="List of sentences to compute similarities for")
+    model: str = Field(default="google/embeddinggemma-300m", description="Embedding model to use")
+
+
+class SimilarityResponse(BaseModel):
+    similarities: List[List[float]] = Field(..., description="Similarity matrix")
+    model: str
+    shape: List[int] = Field(..., description="Shape of similarity matrix")
 
 
 app = FastAPI(
@@ -359,6 +398,81 @@ def health_v1() -> Dict[str, str]:
 def ready() -> Dict[str, bool]:
     """Readiness probe"""
     return {"loaded": _GEN_CACHE.is_loaded()}
+
+
+# Embedding endpoints
+@app.post("/v1/embeddings")
+def create_embeddings(req: EmbeddingRequest) -> EmbeddingResponse:
+    """Create embeddings (OpenAI-compatible)"""
+    try:
+        embedding_gen = get_embedding_generator()
+        
+        # Handle single string or list of strings
+        if isinstance(req.input, str):
+            texts = [req.input]
+        else:
+            texts = req.input
+        
+        # Generate embeddings
+        embeddings = embedding_gen.encode(
+            texts,
+            convert_to_numpy=True,
+            normalize_embeddings=False,
+        )
+        
+        # Convert to list format for JSON response
+        embedding_data = []
+        for i, embedding in enumerate(embeddings):
+            embedding_data.append(EmbeddingData(
+                object="embedding",
+                embedding=embedding.tolist(),
+                index=i
+            ))
+        
+        # Estimate token usage
+        total_text = " ".join(texts)
+        prompt_tokens = _estimate_tokens(total_text)
+        
+        usage = EmbeddingUsage(
+            prompt_tokens=prompt_tokens,
+            total_tokens=prompt_tokens
+        )
+        
+        return EmbeddingResponse(
+            object="list",
+            data=embedding_data,
+            model=req.model,
+            usage=usage
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Embedding generation failed: {e}") from e
+
+
+@app.post("/v1/similarities")
+def compute_similarities(req: SimilarityRequest) -> SimilarityResponse:
+    """Compute pairwise similarities between sentences"""
+    try:
+        embedding_gen = get_embedding_generator()
+        
+        # Generate embeddings and compute similarities
+        embeddings, similarities = embedding_gen.encode_and_similarity(
+            req.sentences,
+            convert_to_numpy=True,
+        )
+        
+        # Convert to list format for JSON response
+        similarities_list = similarities.tolist()
+        shape = list(similarities.shape)
+        
+        return SimilarityResponse(
+            similarities=similarities_list,
+            model=req.model,
+            shape=shape
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Similarity computation failed: {e}") from e
 
 
 

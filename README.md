@@ -4,7 +4,7 @@ A high-performance, production-ready local LLM inference server that provides Op
 
 ## 🚀 Key Features
 
-- **OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions` and `/v1/models` endpoints
+- **OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions`, `/v1/embeddings`, `/v1/similarities`, and `/v1/models` endpoints
 - **High-Performance Inference**: Optimized for NVIDIA GPUs with automatic BF16/FP16 precision and device mapping
 - **Flexible Deployment**: CLI tool for development and FastAPI server for production workloads
 - **Advanced Configuration**: TOML-based configuration with environment variable overrides
@@ -25,6 +25,7 @@ A high-performance, production-ready local LLM inference server that provides Op
 ```
 labs/
 ├── generate.py     # Core LLM generator with HuggingFace Transformers
+├── embeddings.py   # Text embedding generator with sentence-transformers
 ├── cli.py          # Command-line interface (labs-gen)
 ├── api.py          # FastAPI server with OpenAI-compatible endpoints
 ├── config.py       # Configuration management (TOML + env + CLI)
@@ -161,6 +162,10 @@ export LABS_BNB_4BIT_COMPUTE_DTYPE=bf16
 # Server configuration
 export LABS_HOST=0.0.0.0              # LAN access
 export LABS_PORT=8000                 # Server port
+
+# Embedding configuration
+export LABS_EMBEDDING_MODEL="google/embeddinggemma-300m"  # Embedding model
+export LABS_EMBEDDING_DEVICE="auto"                       # Auto GPU/CPU selection
 ```
 
 ### Model Switching
@@ -240,6 +245,8 @@ The API provides OpenAI-compatible endpoints for seamless integration:
 
 - **`GET /v1/models`** - List available models
 - **`POST /v1/chat/completions`** - Create chat completions (streaming and non-streaming)
+- **`POST /v1/embeddings`** - Generate text embeddings
+- **`POST /v1/similarities`** - Compute pairwise similarities between texts
 
 ### Client Usage Example
 
@@ -270,6 +277,144 @@ response = client.chat.completions.create(
 - **`stop`** - Stop sequences
 - **`frequency_penalty`** - Mapped to repetition_penalty
 - **`presence_penalty`** - Frequency penalty variant
+
+## 🔗 Text Embeddings
+
+The server provides OpenAI-compatible text embedding functionality using sentence-transformers models, enabling semantic search, similarity computation, and vector database integration.
+
+### Embedding Configuration
+
+Configure embedding models via environment variables:
+
+```bash
+# Embedding model configuration
+export LABS_EMBEDDING_MODEL="google/embeddinggemma-300m"  # Default embedding model
+export LABS_EMBEDDING_DEVICE="auto"                      # Auto GPU/CPU selection
+```
+
+### Embedding API Examples
+
+```bash
+# Generate embeddings for multiple texts
+curl -s -X POST http://localhost:8000/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": [
+      "That is a happy person",
+      "That is a happy dog",
+      "Today is a sunny day"
+    ],
+    "model": "google/embeddinggemma-300m"
+  }'
+
+# Compute pairwise similarities
+curl -s -X POST http://localhost:8000/v1/similarities \
+  -H "Content-Type: application/json" \
+  -d '{
+    "texts": [
+      "That is a happy person",
+      "That is a happy dog", 
+      "That is a very happy person",
+      "Today is a sunny day"
+    ],
+    "model": "google/embeddinggemma-300m"
+  }'
+```
+
+### Python Client Usage
+
+```python
+import openai
+import numpy as np
+
+client = openai.OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="not-needed"
+)
+
+# Generate embeddings
+response = client.embeddings.create(
+    model="google/embeddinggemma-300m",
+    input=[
+        "That is a happy person",
+        "That is a happy dog",
+        "Today is a sunny day"
+    ]
+)
+
+embeddings = [data.embedding for data in response.data]
+print(f"Generated {len(embeddings)} embeddings of dimension {len(embeddings[0])}")
+
+# Compute similarities using requests (custom endpoint)
+import requests
+
+similarity_response = requests.post(
+    "http://localhost:8000/v1/similarities",
+    json={
+        "texts": [
+            "That is a happy person",
+            "That is a happy dog",
+            "That is a very happy person", 
+            "Today is a sunny day"
+        ],
+        "model": "google/embeddinggemma-300m"
+    }
+)
+
+similarities = similarity_response.json()["similarities"]
+print(f"Similarity matrix shape: {np.array(similarities).shape}")
+```
+
+### Direct Module Usage
+
+For advanced use cases, you can use the embedding module directly:
+
+```python
+from labs.embeddings import get_embedding_generator
+
+# Get the global embedding generator
+embedding_gen = get_embedding_generator()
+
+# Generate embeddings
+texts = ["Hello world", "How are you?", "Good morning"]
+embeddings = embedding_gen.encode(texts)
+print(f"Embeddings shape: {embeddings.shape}")  # [3, 768]
+
+# Compute similarities
+similarities = embedding_gen.similarity(embeddings, embeddings)
+print(f"Similarities shape: {similarities.shape}")  # [3, 3]
+
+# Combined encode and similarity
+embeddings, similarities = embedding_gen.encode_and_similarity(texts)
+```
+
+### Supported Embedding Models
+
+Popular sentence-transformers models that work well:
+
+```bash
+# Google's EmbeddingGemma (default, optimized for efficiency)
+LABS_EMBEDDING_MODEL="google/embeddinggemma-300m"
+
+# All-MiniLM (lightweight, good performance)
+LABS_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+
+# All-mpnet (higher quality, larger model)
+LABS_EMBEDDING_MODEL="sentence-transformers/all-mpnet-base-v2"
+
+# E5 models (excellent multilingual support)
+LABS_EMBEDDING_MODEL="intfloat/e5-base-v2"
+LABS_EMBEDDING_MODEL="intfloat/e5-large-v2"
+```
+
+### Memory Considerations
+
+- **google/embeddinggemma-300m**: ~1.2GB VRAM, 768-dimensional embeddings
+- **all-MiniLM-L6-v2**: ~90MB VRAM, 384-dimensional embeddings  
+- **all-mpnet-base-v2**: ~420MB VRAM, 768-dimensional embeddings
+- **e5-large-v2**: ~1.3GB VRAM, 1024-dimensional embeddings
+
+> **Note**: Embedding models are much smaller than LLMs and can run efficiently on both GPU and CPU.
 
 ## 📖 API Documentation
 

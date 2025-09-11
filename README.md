@@ -1,121 +1,258 @@
 # AI Labs — OpenAI-Compatible Local LLM Inference Server
 
-This repository provides:
-- A core generator built on Hugging Face Transformers with sensible NVIDIA GPU defaults
-- A CLI tool for single-shot and streaming generation
-- A FastAPI server with OpenAI-compatible endpoints (/v1/chat/completions, /v1/models)
-- A TOML-based config with environment and CLI overrides
-- Optional 4-bit/8-bit quantization support via bitsandbytes
+A high-performance, production-ready local LLM inference server that provides OpenAI-compatible APIs for seamless integration with existing applications. Built on HuggingFace Transformers with optimized defaults for NVIDIA GPUs.
 
-Your hardware (as stated): NVIDIA GPU with ≥16GB VRAM and CUDA available. Defaults are set to prefer BF16 (or FP16) with device_map="auto" and no quantization.
+## 🚀 Key Features
 
-Repository layout
-- [labs/generate.py](labs/generate.py) — core generator (HFGenerator)
-- [labs/cli.py](labs/cli.py) — CLI entrypoint (labs-gen)
-- [labs/api.py](labs/api.py) — FastAPI app and streaming endpoints (labs-api)
-- [labs/config.py](labs/config.py) — config loader (labs.toml + env + CLI override)
-- [labs.toml](labs.toml) — default configuration
-- [pyproject.toml](pyproject.toml) — dependencies, scripts, and optional extras
+- **OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions` and `/v1/models` endpoints
+- **High-Performance Inference**: Optimized for NVIDIA GPUs with automatic BF16/FP16 precision and device mapping
+- **Flexible Deployment**: CLI tool for development and FastAPI server for production workloads
+- **Advanced Configuration**: TOML-based configuration with environment variable overrides
+- **Memory Optimization**: Optional 4-bit/8-bit quantization support via BitsAndBytes
+- **Streaming Support**: Real-time token streaming with Server-Sent Events (SSE)
 
-Requirements
-- Python 3.12+
-- NVIDIA GPU with a recent CUDA-capable driver (recommended)
-- Network access to download models from Hugging Face Hub (first run)
+## 📋 System Requirements
 
-Note on PyTorch nightly
-- This project is configured to install PyTorch “nightly” CUDA wheels via uv indexes in [pyproject.toml](pyproject.toml). If you prefer stable wheels, you can change or remove the [tool.uv.sources] section and the [[tool.uv.index]] block pointing at cu130.
+- **Python**: 3.12 or higher
+- **GPU**: NVIDIA GPU with ≥16GB VRAM (recommended)
+- **CUDA**: Recent CUDA-capable driver
+- **Network**: Internet access for initial model downloads from HuggingFace Hub
 
-Quickstart (uv)
-1) Install dependencies:
-- Base (no quantization/test extras):
-  uv sync
-- With quantization and tests:
-  uv sync --extra quantization --extra test
+> **Note**: Optimized for NVIDIA GPUs with BF16/FP16 support and `device_map="auto"` for automatic model sharding.
 
-2) Run the CLI:
-- Non-chat prompt:
-  uv run labs-gen --prompt "Hello! Who are you?" --max-new-tokens 64
-- Chat messages (inline JSON):
-  uv run labs-gen --messages-json '[{"role":"user","content":"Who are you?"}]' --max-new-tokens 64
-- Streaming:
-  uv run labs-gen --prompt "Tell me a short joke about GPUs." --stream
+## 📁 Project Structure
 
-3) Run the API (FastAPI + uvicorn):
-- Start server (accessible on LAN):
-  uv run labs-api
-- Start server on specific host/port:
-  LABS_HOST=0.0.0.0 LABS_PORT=8000 uv run labs-api
-- Health check:
-  curl -s http://localhost:8000/health
+```
+labs/
+├── generate.py     # Core LLM generator with HuggingFace Transformers
+├── cli.py          # Command-line interface (labs-gen)
+├── api.py          # FastAPI server with OpenAI-compatible endpoints
+├── config.py       # Configuration management (TOML + env + CLI)
+└── labs.toml       # Default configuration file
+```
 
-**OpenAI-Compatible API:**
-- List models:
-  curl -s http://localhost:8000/v1/models
-- Chat completion:
-  curl -s -X POST http://localhost:8000/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"Explain BF16 in one sentence"}],"max_tokens":64}'
-- Streaming chat completion:
-  curl -N -s -X POST http://localhost:8000/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"Tell me a joke"}],"max_tokens":64,"stream":true}'
+## ⚡ Quick Start
 
-Configuration
-- Defaults live in [labs.toml](labs.toml). You can point to a different file via:
-  - CLI: --config /path/to/labs.toml
-  - Env var: LABS_CONFIG=/path/to/labs.toml
-- .env support: a .env file (if present) is auto-loaded at startup. Copy [.env.example](.env.example) to .env and edit.
-  - Example: cp .env.example .env
-- Precedence: CLI args override environment vars (including values from .env) override labs.toml.
+### Installation
 
-Key settings in labs.toml:
+```bash
+# Basic installation
+uv sync
+
+# With quantization and testing support
+uv sync --extra quantization --extra test
+```
+
+### CLI Usage
+
+```bash
+# Simple text generation
+uv run labs-gen --prompt "Hello! Who are you?" --max-new-tokens 64
+
+# Chat-style interaction
+uv run labs-gen --messages-json '[{"role":"user","content":"Who are you?"}]' --max-new-tokens 64
+
+# Streaming generation
+uv run labs-gen --prompt "Tell me a short joke about GPUs." --stream
+```
+
+### API Server
+
+```bash
+# Start server (accessible on LAN)
+uv run labs-api
+
+# Custom host/port configuration
+LABS_HOST=0.0.0.0 LABS_PORT=8000 uv run labs-api
+
+# Health check
+curl -s http://localhost:8000/health
+```
+
+### OpenAI-Compatible API Examples
+
+```bash
+# List available models
+curl -s http://localhost:8000/v1/models
+
+# Chat completion
+curl -s -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "messages": [{"role": "user", "content": "Explain BF16 in one sentence"}],
+    "max_tokens": 64
+  }'
+
+# Streaming chat completion
+curl -N -s -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "messages": [{"role": "user", "content": "Tell me a joke"}],
+    "max_tokens": 64,
+    "stream": true
+  }'
+```
+
+> **PyTorch Note**: This project uses PyTorch nightly CUDA wheels for optimal performance. To use stable wheels instead, modify the `[tool.uv.sources]` section in `pyproject.toml`.
+
+## ⚙️ Configuration
+
+### Configuration Hierarchy
+
+Configuration follows this precedence order (highest to lowest):
+1. **CLI arguments** - Override all other settings
+2. **Environment variables** - Override config file settings  
+3. **TOML config file** - Default configuration source
+
+### Configuration Files
+
+```bash
+# Use custom config file
+uv run labs-gen --config /path/to/custom.toml
+
+# Or set via environment variable
+export LABS_CONFIG=/path/to/custom.toml
+
+# Environment file support
+cp .env.example .env  # Edit as needed
+```
+
+### Core Settings (`labs.toml`)
+
+```toml
 [generation]
-- model_name = "Qwen/Qwen2.5-7B-Instruct"
-- device_map = "auto"        # auto-placement across GPU/CPU
-- torch_dtype = "bf16"       # prefer bf16 on modern NVIDIA GPUs; or "fp16"/"fp32"
-- max_new_tokens, temperature, top_p, top_k, do_sample, repetition_penalty
-- use_chat_template, add_generation_prompt
+model_name = "openai/gpt-oss-20b"
+device_map = "auto"                    # Auto GPU/CPU placement
+torch_dtype = "bf16"                   # BF16/FP16/FP32 precision
+max_new_tokens = 128
+temperature = 0.7
+top_p = 0.9
+do_sample = true
+use_chat_template = true
+add_generation_prompt = true
 
 [quantization]
-- load_in_4bit/load_in_8bit are disabled by default for ≥16GB GPUs
-- If RAM is tight, enable one (not both)
-- 4-bit options: bnb_4bit_quant_type, bnb_4bit_use_double_quant, bnb_4bit_compute_dtype
+load_in_4bit = false                   # Enable for memory optimization
+load_in_8bit = false                   # Alternative to 4-bit
+bnb_4bit_quant_type = "nf4"
+bnb_4bit_use_double_quant = true
+```
 
-Environment variable overrides (examples)
-- LABS_MODEL=meta-llama/Llama-3-8B-Instruct
-- LABS_MAX_NEW_TOKENS=256
-- LABS_TEMPERATURE=0.2
-- LABS_TOP_P=0.95
-- LABS_DEVICE_MAP=auto
-- LABS_TORCH_DTYPE=bf16
-- LABS_TRUST_REMOTE_CODE=true
-- LABS_LOAD_IN_4BIT=true
-- LABS_BNB_4BIT_COMPUTE_DTYPE=bf16
+### Environment Variables
 
-**Server Configuration:**
-- LABS_HOST=0.0.0.0 (default: binds to all interfaces for LAN access)
-- LABS_PORT=8000 (default: server port)
+```bash
+# Model and generation settings
+export LABS_MODEL="openai/gpt-oss-20b"
+export LABS_MAX_NEW_TOKENS=256
+export LABS_TEMPERATURE=0.2
+export LABS_TOP_P=0.95
 
-CLI usage examples
-- Deterministic decoding (no sampling):
-  uv run labs-gen --prompt "Summarize CUDA BF16" --no-sample --max-new-tokens 80
-- Use a different model and set temperature:
-  uv run labs-gen --prompt "What is device_map=auto?" --model "mistralai/Mistral-7B-Instruct-v0.3" --temperature 0.3
-- Chat mode:
-  uv run labs-gen --messages-json '[{"role":"user","content":"Write a greeting."}]'
-- From file:
-  uv run labs-gen --messages-json "@/absolute/or/relative/messages.json"
+# Hardware optimization
+export LABS_DEVICE_MAP=auto
+export LABS_TORCH_DTYPE=bf16
+export LABS_TRUST_REMOTE_CODE=false
 
-OpenAI API Compatibility
-The API now provides OpenAI-compatible endpoints that can be used as a drop-in replacement with most OpenAI clients:
+# Memory optimization
+export LABS_LOAD_IN_4BIT=true
+export LABS_BNB_4BIT_COMPUTE_DTYPE=bf16
 
-**Supported Endpoints:**
-- `GET /v1/models` - List available models
-- `POST /v1/chat/completions` - Create chat completions (streaming and non-streaming)
+# Server configuration
+export LABS_HOST=0.0.0.0              # LAN access
+export LABS_PORT=8000                 # Server port
+```
 
-**Model Name Mapping:**
-- `gpt-3.5-turbo` → `Qwen/Qwen2.5-7B-Instruct`
-- `gpt-4` → `Qwen/Qwen2.5-7B-Instruct`
-- `qwen2.5-7b-instruct` → `Qwen/Qwen2.5-7B-Instruct`
-- Or use the full model name directly: `Qwen/Qwen2.5-7B-Instruct`
+### Model Switching
 
-**OpenAI Client Usage Example:**
+The system supports easy model switching through model profiles in `labs.toml`:
+
+#### Available Model Profiles
+
+```toml
+[model_profiles]
+# Available model configurations
+qwen = { model_name = "Qwen/Qwen2.5-7B-Instruct", load_in_4bit = false, load_in_8bit = false }
+gpt_oss = { model_name = "openai/gpt-oss-20b", load_in_4bit = true, load_in_8bit = false }
+
+# Active model profile (change this to switch models)
+active_profile = "qwen"
+```
+
+#### How to Switch Models
+
+1. **Edit `labs.toml`**: Change the `active_profile` value:
+   ```toml
+   # Switch to GPT-OSS-20B model
+   active_profile = "gpt_oss"
+   
+   # Switch to Qwen model  
+   active_profile = "qwen"
+   ```
+
+2. **Add Custom Profiles**: Define your own model configurations:
+   ```toml
+   [model_profiles]
+   # Add a new model profile
+   mistral = { model_name = "mistralai/Mistral-7B-Instruct-v0.3", load_in_4bit = false, load_in_8bit = false }
+   llama = { model_name = "meta-llama/Llama-2-7b-chat-hf", load_in_4bit = true, load_in_8bit = false }
+   
+   # Set as active
+   active_profile = "mistral"
+   ```
+
+3. **Override via Environment**: Use environment variables for temporary changes:
+   ```bash
+   # Override model for single session
+   export LABS_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
+   uv run labs-gen --prompt "Hello!"
+   ```
+
+#### Memory Considerations
+
+- **Qwen/Qwen2.5-7B-Instruct**: Works well with 16GB+ VRAM, no quantization needed
+- **openai/gpt-oss-20b**: Requires 4-bit quantization for 16GB VRAM, may need more memory
+- **Custom Models**: Adjust quantization settings based on model size and available VRAM
+
+> **Note**: Model profiles automatically apply appropriate quantization settings for each model. Large models (>10B parameters) typically require quantization on consumer GPUs.
+
+### Advanced CLI Examples
+
+```bash
+# Deterministic generation (no sampling)
+uv run labs-gen --prompt "Summarize CUDA BF16" --no-sample --max-new-tokens 80
+
+# Custom model with specific parameters
+uv run labs-gen \
+  --prompt "What is device_map=auto?" \
+  --model "mistralai/Mistral-7B-Instruct-v0.3" \
+  --temperature 0.3
+
+# Chat mode with JSON messages
+uv run labs-gen --messages-json '[{"role":"user","content":"Write a greeting."}]'
+
+# Load messages from file
+uv run labs-gen --messages-json "@/path/to/messages.json"
+```
+
+## 🔌 OpenAI API Compatibility
+
+The API provides OpenAI-compatible endpoints that can be used as a drop-in replacement with most OpenAI clients:
+
+### Supported Endpoints
+
+- **`GET /v1/models`** - List available models
+- **`POST /v1/chat/completions`** - Create chat completions (streaming and non-streaming)
+
+### Model Name Mapping
+
+- `gpt-3.5-turbo` → `openai/gpt-oss-20b`
+- `gpt-4` → `openai/gpt-oss-20b`
+- `gpt-oss-20b` → `openai/gpt-oss-20b`
+- Or use the full model name directly: `openai/gpt-oss-20b`
+
+### OpenAI Client Usage Example
+
 ```python
 import openai
 
@@ -125,80 +262,185 @@ client = openai.OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",  # Maps to your local Qwen model
+    model="gpt-3.5-turbo",  # Maps to your local GPT-OSS-20B model
     messages=[{"role": "user", "content": "Hello!"}],
     max_tokens=100
 )
 ```
 
-**Supported Parameters:**
-- `model` - Model name (with automatic mapping)
-- `messages` - Chat messages array
-- `max_tokens` - Maximum tokens to generate
-- `temperature` - Sampling temperature (0.0-2.0)
-- `top_p` - Nucleus sampling probability
-- `top_k` - Top-k sampling (non-standard OpenAI param)
-- `stream` - Enable streaming responses
-- `stop` - Stop sequences
-- `frequency_penalty` - Mapped to repetition_penalty
-- `presence_penalty` - Frequency penalty variant
+### Supported Parameters
 
-API schema and docs
-- Swagger UI and OpenAPI are available at:
-  http://localhost:8000/docs
-  http://localhost:8000/openapi.json
+- **`model`** - Model name (with automatic mapping)
+- **`messages`** - Chat messages array
+- **`max_tokens`** - Maximum tokens to generate
+- **`temperature`** - Sampling temperature (0.0-2.0)
+- **`top_p`** - Nucleus sampling probability
+- **`top_k`** - Top-k sampling (non-standard OpenAI param)
+- **`stream`** - Enable streaming responses
+- **`stop`** - Stop sequences
+- **`frequency_penalty`** - Mapped to repetition_penalty
+- **`presence_penalty`** - Frequency penalty variant
 
-Streaming details
-- CLI: pass --stream to progressively print tokens to stdout.
-- API: Set `"stream": true` in `/v1/chat/completions` requests for Server-Sent Events (SSE) streaming with proper OpenAI format
+## 📖 API Documentation
 
-Quantization (optional)
-- Install extras:
-  uv sync --extra quantization
-- Enable in labs.toml or env:
-  [quantization]
-  load_in_4bit = true
-- Notes:
-  - Only enable one of load_in_4bit or load_in_8bit
-  - bitsandbytes requires a compatible CUDA environment; errors will include guidance
+Interactive API documentation and schema are available when the server is running:
 
-Troubleshooting
-- CUDA/driver errors:
-  - Ensure your NVIDIA driver matches your CUDA runtime and PyTorch wheel.
-  - If using nightly, consider switching to stable wheels if you hit regressions.
-- Out-of-memory on GPU:
-  - Reduce max_new_tokens
-  - Enable 4-bit quantization
-  - Try a smaller model
-- Slow performance on CPU:
-  - Use quantized or very small models
-  - Consider enabling device_map=auto on a CUDA machine
-- trust_remote_code:
-  - Only enable for trusted model repos; it executes repository code
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **OpenAPI Schema**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
-**LAN Access Issues:**
-- Server not reachable from other devices:
-  - Ensure server is bound to 0.0.0.0 (default): `LABS_HOST=0.0.0.0 uv run labs-api`
-  - Check firewall settings: `sudo ufw allow 8000` (Ubuntu/Debian) or equivalent
-  - Find your server IP: `ip addr show` or `hostname -I`
-  - Test from another device: `curl http://<server-ip>:8000/health`
-- Port already in use:
-  - Use different port: `LABS_PORT=8001 uv run labs-api`
-  - Kill existing process: `pkill -f labs-api` or `lsof -ti:8000 | xargs kill`
-- Network connectivity:
-  - Ensure devices are on same network/subnet
-  - Check router/network configuration for device isolation
-  - Try disabling VPN if active
+## 🌊 Streaming Support
 
-Testing (smoke test)
-- Install test extras:
-  uv sync --extra test
-- Run tests:
-  uv run pytest -q
-- The smoke test will use a tiny model to keep runtime and memory minimal.
+### CLI Streaming
+```bash
+# Enable streaming with --stream flag
+uv run labs-gen --prompt "Tell me a story" --stream
+```
 
-Security note
-- If you enable trust_remote_code, you are allowing execution of arbitrary code from the model repository. Only enable it for sources you trust.
+### API Streaming
+```bash
+# Enable Server-Sent Events (SSE) streaming
+curl -N -s -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello"}], "stream": true}'
+```
 
-License
-- Add your project’s license here.
+> **Note**: Streaming responses use OpenAI-compatible SSE format with `data:` prefixed JSON chunks.
+
+## ⚡ Memory Optimization (Quantization)
+
+Reduce memory usage with optional 4-bit/8-bit quantization via BitsAndBytes:
+
+### Installation
+```bash
+# Install quantization dependencies
+uv sync --extra quantization
+```
+
+### Configuration
+```toml
+# Enable in labs.toml
+[quantization]
+load_in_4bit = true                    # 4-bit quantization (recommended)
+bnb_4bit_quant_type = "nf4"           # NF4 quantization type
+bnb_4bit_use_double_quant = true      # Double quantization for better accuracy
+bnb_4bit_compute_dtype = "bf16"       # Compute dtype for quantized layers
+```
+
+```bash
+# Or via environment variables
+export LABS_LOAD_IN_4BIT=true
+export LABS_BNB_4BIT_COMPUTE_DTYPE=bf16
+```
+
+### Important Notes
+- **Mutual Exclusivity**: Only enable one of `load_in_4bit` or `load_in_8bit`
+- **CUDA Requirement**: BitsAndBytes requires a compatible CUDA environment
+- **Memory Savings**: 4-bit quantization can reduce memory usage by ~75%
+- **Performance**: Slight inference speed reduction for significant memory savings
+
+## 🔧 Troubleshooting
+
+### CUDA/Driver Issues
+- **Driver Compatibility**: Ensure your NVIDIA driver matches your CUDA runtime and PyTorch wheel
+- **Nightly Wheels**: If using PyTorch nightly, consider switching to stable wheels for regressions
+- **CUDA Environment**: Verify CUDA installation with `nvidia-smi` and `nvcc --version`
+
+### Memory Issues
+- **GPU Out-of-Memory**:
+  - Reduce `max_new_tokens` parameter
+  - Enable 4-bit quantization (`load_in_4bit = true`)
+  - Try a smaller model (e.g., 3B instead of 7B parameters)
+- **CPU Performance**:
+  - Use quantized models for CPU inference
+  - Consider smaller models for CPU-only setups
+  - Enable `device_map="auto"` on CUDA machines
+
+### Security Considerations
+- **`trust_remote_code`**: Only enable for trusted model repositories
+  - ⚠️ **Warning**: This executes arbitrary code from the model repository
+
+### Network & Server Issues
+
+#### LAN Access Problems
+- **Server Unreachable**:
+  ```bash
+  # Ensure server binds to all interfaces (default)
+  LABS_HOST=0.0.0.0 uv run labs-api
+  
+  # Check firewall settings
+  sudo ufw allow 8000  # Ubuntu/Debian
+  
+  # Find server IP address
+  ip addr show
+  hostname -I
+  
+  # Test from another device
+  curl http://<server-ip>:8000/health
+  ```
+
+- **Port Conflicts**:
+  ```bash
+  # Use different port
+  LABS_PORT=8001 uv run labs-api
+  
+  # Kill existing process
+  pkill -f labs-api
+  # Or find and kill by port
+  lsof -ti:8000 | xargs kill
+  ```
+
+- **Network Connectivity**:
+  - Ensure devices are on the same network/subnet
+  - Check router configuration for device isolation
+  - Temporarily disable VPN if active
+  - Verify no corporate firewall blocking access
+
+## 🧪 Testing
+
+The project includes smoke tests to verify basic functionality:
+
+### Installation
+```bash
+# Install test dependencies
+uv sync --extra test
+```
+
+### Running Tests
+```bash
+# Run all tests
+uv run pytest -q
+
+# Run with verbose output
+uv run pytest -v
+```
+
+### Test Details
+- **Smoke Test**: Uses a tiny model to minimize runtime and memory usage
+- **Coverage**: Tests basic CLI and API functionality
+- **Performance**: Optimized for CI/CD environments
+
+## 🔒 Security
+
+### Code Execution Warning
+- **`trust_remote_code`**: Only enable for trusted model repositories
+  - ⚠️ **Critical Warning**: This setting allows execution of arbitrary code from the model repository
+  - **Recommendation**: Only use with models from verified, trusted sources
+  - **Risk**: Malicious models could execute harmful code on your system
+
+### Best Practices
+- **Model Sources**: Prefer official model repositories (HuggingFace, Meta, etc.)
+- **Network Security**: Consider firewall rules when exposing the API server
+- **Access Control**: The API server does not require authentication by design
+- **Environment Isolation**: Consider running in containers for production deployments
+
+## 📄 License
+
+This project is open source. Please add your preferred license here.
+
+### Common License Options
+- **MIT License**: Permissive license allowing commercial use
+- **Apache 2.0**: Permissive license with patent protection
+- **GPL v3**: Copyleft license requiring derivative works to be open source
+- **BSD 3-Clause**: Simple permissive license
+
+> **Note**: Choose a license that aligns with your project goals and requirements.

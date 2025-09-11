@@ -216,20 +216,31 @@ def load_config(path: Optional[str] = None) -> GenerationConfig:
     model_name = os.getenv("LABS_MODEL", default_model_name)
     
     p = _find_config_path(path)
-
+    
+    # Load config data
+    data: Dict[str, Any] = {}
     if p is not None:
         try:
             with open(p, "rb") as f:
-                data: Dict[str, Any] = tomllib.load(f)
-            
-            # Get model name from config file if available
-            gen_tbl = data.get("generation") or data.get("model") or {}
-            if isinstance(gen_tbl, dict) and "model_name" in gen_tbl:
-                model_name = str(gen_tbl["model_name"])
-                
+                data = tomllib.load(f)
         except Exception:
-            # On parse error, use default model name
             pass
+
+    # Handle model profiles
+    model_profiles = data.get("model_profiles", {})
+    active_profile = model_profiles.get("active_profile", "")
+    
+    if active_profile and active_profile in model_profiles:
+        profile = model_profiles[active_profile]
+        if isinstance(profile, dict):
+            # Apply profile settings
+            if "model_name" in profile:
+                model_name = str(profile["model_name"])
+    
+    # Check generation table for model name (fallback only if no active profile)
+    gen_tbl = data.get("generation") or data.get("model") or {}
+    if isinstance(gen_tbl, dict) and "model_name" in gen_tbl and not active_profile:
+        model_name = str(gen_tbl["model_name"])
 
     # Check environment override again (highest priority)
     model_name = os.getenv("LABS_MODEL", model_name)
@@ -237,24 +248,28 @@ def load_config(path: Optional[str] = None) -> GenerationConfig:
     # Create config with determined model name
     cfg = GenerationConfig(model_name=model_name)
 
-    # Now apply all other settings from config file
-    if p is not None:
-        try:
-            with open(p, "rb") as f:
-                data: Dict[str, Any] = tomllib.load(f)
-        except Exception:
-            # On parse error, still try env overrides
-            _apply_env_overrides(cfg)
-            return cfg
+    # Apply profile quantization settings if available
+    if active_profile and active_profile in model_profiles:
+        profile = model_profiles[active_profile]
+        if isinstance(profile, dict):
+            if "load_in_4bit" in profile:
+                cfg.load_in_4bit = bool(profile["load_in_4bit"])
+            if "load_in_8bit" in profile:
+                cfg.load_in_8bit = bool(profile["load_in_8bit"])
 
-        # Merge tables
-        gen_tbl = data.get("generation") or data.get("model") or {}
-        if isinstance(gen_tbl, dict):
+    # Merge tables from config file (but don't override model_name if we have an active profile)
+    if isinstance(gen_tbl, dict):
+        # Temporarily remove model_name if we have an active profile to prevent override
+        if active_profile and "model_name" in gen_tbl:
+            temp_model_name = cfg.model_name
+            _merge_generation_table(cfg, gen_tbl)
+            cfg.model_name = temp_model_name  # Restore profile model name
+        else:
             _merge_generation_table(cfg, gen_tbl)
 
-        q_tbl = data.get("quantization") or {}
-        if isinstance(q_tbl, dict):
-            _merge_quantization_table(cfg, q_tbl)
+    q_tbl = data.get("quantization") or {}
+    if isinstance(q_tbl, dict):
+        _merge_quantization_table(cfg, q_tbl)
 
     # Environment overrides last
     _apply_env_overrides(cfg)

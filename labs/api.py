@@ -25,7 +25,7 @@ class ChatMessage(BaseModel):
 
 class ChatCompletionRequest(BaseModel):
     # Core OpenAI parameters
-    model: str = Field(default="qwen2.5-7b-instruct", description="Model to use for completion")
+    model: str = Field(default="gpt-oss-20b", description="Model to use for completion")
     messages: List[ChatMessage] = Field(..., description="List of messages comprising the conversation")
     
     # Generation parameters (OpenAI-compatible names)
@@ -155,10 +155,11 @@ def _startup_preload() -> None:
 def _map_model_name(openai_model: str) -> str:
     """Map OpenAI model names to actual HuggingFace model names"""
     model_mapping = {
-        "gpt-3.5-turbo": "Qwen/Qwen2.5-7B-Instruct",
-        "gpt-4": "Qwen/Qwen2.5-7B-Instruct",
-        "qwen2.5-7b-instruct": "Qwen/Qwen2.5-7B-Instruct",
-        "qwen": "Qwen/Qwen2.5-7B-Instruct",
+        "gpt-3.5-turbo": "openai/gpt-oss-20b",
+        "gpt-4": "openai/gpt-oss-20b",
+        "gpt-oss-20b": "openai/gpt-oss-20b",
+        "qwen2.5-7b-instruct": "Qwen/Qwen2.5-7B-Instruct",  # Keep for backward compatibility
+        "qwen": "Qwen/Qwen2.5-7B-Instruct",  # Keep for backward compatibility
     }
     return model_mapping.get(openai_model, openai_model)
 
@@ -213,7 +214,8 @@ def list_models() -> ModelListResponse:
     models = [
         ModelInfo(id="gpt-3.5-turbo", created=current_time),
         ModelInfo(id="gpt-4", created=current_time),
-        ModelInfo(id="qwen2.5-7b-instruct", created=current_time),
+        ModelInfo(id="gpt-oss-20b", created=current_time),
+        ModelInfo(id="qwen2.5-7b-instruct", created=current_time),  # Backward compatibility
         ModelInfo(id=cfg.model_name, created=current_time),
     ]
     

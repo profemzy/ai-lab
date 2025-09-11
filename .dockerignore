@@ -1,0 +1,36 @@
+# Exclude VCS and editor files
+.git
+.gitignore
+.vscode
+.idea
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.whl
+*.egg-info/
+.build/
+dist/
+wheels/
+
+# Local virtual environments
+.venv/
+.env
+.env.local
+
+# Caches and large local data (not needed in image)
+.cache/
+.huggingface/
+data/
+outputs/
+checkpoints/
+logs/
+
+# Node/npm (if any future frontends)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

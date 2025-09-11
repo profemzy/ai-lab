@@ -1,0 +1,36 @@
+# Labs configuration (TOML)
+# This file sets defaults for model loading and generation.
+# Priority: CLI args override env vars override this file.
+
+[generation]
+# Primary model (instruction-tuned chat model)
+model_name = "Qwen/Qwen2.5-7B-Instruct"
+
+# Generation parameters
+max_new_tokens = 128
+temperature = 0.7
+top_p = 0.9
+# Set top_k to a small integer (e.g., 50) to enable top-k sampling; omit to disable
+# top_k = 50
+do_sample = true
+# repetition_penalty = 1.1
+
+# Runtime/device
+device_map = "auto"          # auto-place across available GPU(s)/CPU
+torch_dtype = "bf16"         # prefer bf16 on NVIDIA >=Ampere; use "fp16" or "fp32" if needed
+trust_remote_code = false    # enable for custom model repos if required
+
+# Chat formatting
+use_chat_template = true
+add_generation_prompt = true
+
+[quantization]
+# Quantization is disabled by default for >=16GB VRAM setups.
+# Enable one (not both) if you need to reduce memory footprint.
+load_in_4bit = false
+load_in_8bit = false
+
+# 4-bit settings (only used if load_in_4bit = true)
+bnb_4bit_quant_type = "nf4"
+bnb_4bit_use_double_quant = true
+# bnb_4bit_compute_dtype = "bf16"   # or "fp16"; omit to auto-select

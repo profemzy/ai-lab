@@ -385,6 +385,80 @@ export LABS_BNB_4BIT_COMPUTE_DTYPE=bf16
   - Temporarily disable VPN if active
   - Verify no corporate firewall blocking access
 
+## 🐳 Docker Deployment
+
+The project includes Docker support for containerized deployment with GPU acceleration.
+
+### Building the Image
+
+```bash
+# Build the Docker image
+docker build -t labs-api .
+```
+
+### Running the Container
+
+```bash
+# Run with GPU support and .env file configuration
+docker run -d --name labs-api-container \
+  --gpus all \
+  -p 8000:8000 \
+  -v labs_hf_cache:/data \
+  -v $(pwd)/.env:/app/.env \
+  labs-api:latest
+
+# Check container status
+docker ps
+
+# View logs
+docker logs labs-api-container
+```
+
+### Docker Configuration
+
+The container automatically:
+- **Loads Configuration**: Reads from mounted `.env` file
+- **GPU Access**: Uses `--gpus all` for NVIDIA GPU acceleration
+- **Model Caching**: Persists HuggingFace models in `labs_hf_cache` volume
+- **Health Checks**: Built-in health monitoring on `/health` endpoint
+
+### Required .env Settings
+
+Ensure your `.env` file includes the HuggingFace token for gated models:
+
+```bash
+# Core model configuration
+LABS_MODEL=mistralai/Mistral-7B-Instruct-v0.1
+LABS_DEVICE_MAP=auto
+LABS_TORCH_DTYPE=bf16
+
+# HuggingFace authentication (required for gated models)
+HF_TOKEN=your_token_here
+```
+
+### Docker Management
+
+```bash
+# Stop the container
+docker stop labs-api-container
+
+# Remove the container
+docker rm labs-api-container
+
+# View container logs in real-time
+docker logs -f labs-api-container
+
+# Execute commands inside the container
+docker exec labs-api-container labs-gen --prompt "Hello!" --max-new-tokens 32
+```
+
+### Production Considerations
+
+- **Resource Limits**: Consider setting memory and CPU limits for production
+- **Networking**: Use Docker networks for multi-container deployments
+- **Secrets Management**: Use Docker secrets or external secret management for tokens
+- **Monitoring**: Integrate with container monitoring solutions
+
 ## 🧪 Testing
 
 The project includes smoke tests to verify basic functionality:

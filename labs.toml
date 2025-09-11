@@ -7,13 +7,15 @@
 model_name = "Qwen/Qwen2.5-7B-Instruct"
 
 # Generation parameters
-max_new_tokens = 128
+max_new_tokens = 512          # Generous default for complete responses
 temperature = 0.7
 top_p = 0.9
 # Set top_k to a small integer (e.g., 50) to enable top-k sampling; omit to disable
 # top_k = 50
 do_sample = true
 # repetition_penalty = 1.1
+
+# Interactive mode uses higher limits (8192 tokens) for unrestricted responses
 
 # Runtime/device
 device_map = "auto"          # auto-place across available GPU(s)/CPU

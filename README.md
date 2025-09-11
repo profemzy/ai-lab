@@ -4,12 +4,14 @@ A high-performance, production-ready local LLM inference server that provides Op
 
 ## 🚀 Key Features
 
-- **OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions`, `/v1/embeddings`, `/v1/similarities`, and `/v1/models` endpoints
-- **High-Performance Inference**: Optimized for NVIDIA GPUs with automatic BF16/FP16 precision and device mapping
-- **Flexible Deployment**: CLI tool for development and FastAPI server for production workloads
-- **Advanced Configuration**: TOML-based configuration with environment variable overrides
-- **Memory Optimization**: Optional 4-bit/8-bit quantization support via BitsAndBytes
-- **Streaming Support**: Real-time token streaming with Server-Sent Events (SSE)
+- **🎨 Beautiful Terminal UI**: Modern, interactive CLI with progress bars, animations, and rich formatting
+- **💬 Interactive Chat Mode**: Full conversation management with save/load functionality and session statistics
+- **🔌 OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions`, `/v1/embeddings`, `/v1/similarities`, and `/v1/models` endpoints
+- **⚡ High-Performance Inference**: Optimized for NVIDIA GPUs with automatic BF16/FP16 precision and device mapping
+- **🚀 Flexible Deployment**: Enhanced CLI tool for development and FastAPI server for production workloads
+- **⚙️ Advanced Configuration**: TOML-based configuration with environment variable overrides
+- **💾 Memory Optimization**: Optional 4-bit/8-bit quantization support via BitsAndBytes
+- **🌊 Streaming Support**: Real-time token streaming with Server-Sent Events (SSE)
 
 ## 📋 System Requirements
 
@@ -26,7 +28,9 @@ A high-performance, production-ready local LLM inference server that provides Op
 labs/
 ├── generate.py     # Core LLM generator with HuggingFace Transformers
 ├── embeddings.py   # Text embedding generator with sentence-transformers
-├── cli.py          # Command-line interface (labs-gen)
+├── cli.py          # Enhanced command-line interface (labs-gen)
+├── ui.py           # Beautiful terminal UI components (NEW!)
+├── interactive.py  # Interactive chat & conversation management (NEW!)
 ├── api.py          # FastAPI server with OpenAI-compatible endpoints
 ├── config.py       # Configuration management (TOML + env + CLI)
 └── labs.toml       # Default configuration file
@@ -37,24 +41,41 @@ labs/
 ### Installation
 
 ```bash
-# Basic installation
+# Basic installation (includes beautiful terminal UI)
 uv sync
 
 # With quantization and testing support
 uv sync --extra quantization --extra test
+
+# Dependencies for enhanced CLI:
+# - rich: Beautiful terminal formatting and progress bars
+# - typer: Enhanced CLI argument parsing  
+# - inquirer: Interactive prompts and menus
 ```
 
 ### CLI Usage
 
 ```bash
-# Simple text generation
+# 🎨 Beautiful Interactive Chat Mode (NEW!)
+uv run labs-gen --interactive
+
+# Simple text generation with enhanced UI
 uv run labs-gen --prompt "Hello! Who are you?" --max-new-tokens 64
 
 # Chat-style interaction
 uv run labs-gen --messages-json '[{"role":"user","content":"Who are you?"}]' --max-new-tokens 64
 
-# Streaming generation
+# Streaming generation with beautiful terminal UI
 uv run labs-gen --prompt "Tell me a short joke about GPUs." --stream
+
+# Show GPU information
+uv run labs-gen --show-gpu
+
+# Display configuration
+uv run labs-gen --show-config
+
+# Plain output (no UI styling)
+uv run labs-gen --prompt "Hello" --no-ui
 ```
 
 ### API Server
@@ -218,23 +239,140 @@ model_name = "Qwen/Qwen2.5-7B-Instruct"
 
 > **Note**: Model profiles automatically apply appropriate quantization settings for each model. Large models (>10B parameters) typically require quantization on consumer GPUs.
 
-### Advanced CLI Examples
+### 🎨 Enhanced CLI Features
 
+The CLI now includes a beautiful terminal interface with rich formatting, progress bars, and interactive features.
+
+#### **Interactive Chat Mode**
 ```bash
-# Deterministic generation (no sampling)
+# Start interactive mode with full conversation management
+uv run labs-gen --interactive
+
+# Commands available in interactive mode:
+/help               # Show available commands
+/save               # Save conversation with custom title
+/load               # Load from saved conversations
+/list               # List all saved conversations
+/clear              # Clear current conversation
+/stats              # Show session statistics
+/config             # Display model configuration
+/exit, /quit        # Exit interactive mode
+```
+
+#### **Information Display**
+```bash
+# Show GPU information with beautiful formatting
+uv run labs-gen --show-gpu
+
+# Display current configuration in styled table
+uv run labs-gen --show-config
+
+# Disable rich UI for plain text output
+uv run labs-gen --prompt "Hello" --no-ui
+```
+
+#### **Advanced Generation Examples**
+```bash
+# Interactive mode with specific model
+LABS_MODEL=codellama/CodeLlama-7b-Instruct-hf uv run labs-gen --interactive
+
+# Deterministic generation with enhanced UI
 uv run labs-gen --prompt "Summarize CUDA BF16" --no-sample --max-new-tokens 80
 
-# Custom model with specific parameters
+# Custom model with beautiful progress display
 uv run labs-gen \
   --prompt "What is device_map=auto?" \
   --model "mistralai/Mistral-7B-Instruct-v0.3" \
-  --temperature 0.3
+  --temperature 0.3 \
+  --stream
 
-# Chat mode with JSON messages
+# Chat mode with JSON messages and UI
 uv run labs-gen --messages-json '[{"role":"user","content":"Write a greeting."}]'
 
-# Load messages from file
+# Load messages from file with progress indication
 uv run labs-gen --messages-json "@/path/to/messages.json"
+```
+
+#### **UI Features**
+- **🎨 Welcome Banner**: ASCII art with gradient colors
+- **📊 Progress Bars**: Animated model loading with stages  
+- **📋 Configuration Tables**: Styled display of settings
+- **🎯 Generation Stats**: Performance metrics after each response
+- **⚡ Real-time Streaming**: Beautiful typing effects
+- **💾 Conversation Management**: Save/load chat history
+- **🔧 Error Handling**: Helpful error messages with suggestions
+
+#### **Conversation History**
+
+The interactive mode automatically manages conversation history with persistent storage:
+
+```bash
+# Conversations are saved to ~/.labs/conversations/
+# Each conversation includes:
+# - Full message history with timestamps
+# - Session statistics (tokens, response times)
+# - Custom titles and metadata
+
+# Example conversation management:
+You: Hello! Can you help me with Python?
+🤖 Assistant: [response]
+
+You: /save
+Enter conversation title: Python Help Session
+✅ Conversation saved: /home/user/.labs/conversations/Python Help Session.json
+
+# Later, load the conversation:
+You: /load
+┌─────┬──────────────────────┬────────────┬──────────┐
+│ #   │ Title               │ Date       │ Messages │
+├─────┼──────────────────────┼────────────┼──────────┤
+│ 1   │ Python Help Session │ 2024-01-15 │ 8        │
+│ 2   │ Code Review Chat    │ 2024-01-14 │ 12       │
+└─────┴──────────────────────┴────────────┴──────────┘
+Enter conversation number: 1
+✅ Loaded conversation: Python Help Session
+```
+
+#### **Example Session Output**
+
+When you run `uv run labs-gen --interactive`, you'll see:
+
+```
+╭─────────────────────────────────────────────────────────────╮
+│  █████╗ ██╗    ██╗     █████╗ ██████╗ ███████╗              │
+│ ██╔══██╗██║    ██║    ██╔══██╗██╔══██╗██╔════╝              │  
+│ ███████║██║    ██║    ███████║██████╔╝███████╗              │
+│ ██╔══██║██║    ██║    ██╔══██║██╔══██╗╚════██║              │
+│ ██║  ██║██║    ██████╗██║  ██║██████╔╝███████║              │
+│ ╚═╝  ╚═╝╚═╝    ╚═════╝╚═╝  ╚═╝╚═════╝ ╚══════╝              │
+│           🤖 Local LLM Inference Server                      │
+│        OpenAI-Compatible • GPU-Optimized • Production-Ready │
+╰─────────────────────────────────────────────────────────────╯
+
+🔧 Configuration Summary
+┌────────────────────┬──────────────────────────────────────┬────────┐
+│ Setting           │ Value                                │ Status │
+├────────────────────┼──────────────────────────────────────┼────────┤
+│ Model             │ deepseek-ai/DeepSeek-R1-0528-Qwen3-8B │ ✓      │
+│ Max Tokens        │ 128                                  │ ✓      │
+│ Temperature       │ 0.7                                  │ ✓      │
+│ Device Map        │ auto                                 │ ✓      │
+│ Precision         │ bfloat16                             │ ✓      │
+│ Quantization      │ Disabled                             │ ✓      │
+└────────────────────┴──────────────────────────────────────┴────────┘
+
+🤖 Loading Model...
+🔍 Resolving model configuration...     ████████████████████ 100%
+📥 Downloading tokenizer...              ████████████████████ 100%  
+⚙️  Loading model architecture...        ████████████████████ 100%
+🧠 Loading model weights...              ████████████████████ 100%
+🎯 Optimizing for hardware...            ████████████████████ 100%
+✅ Model ready!
+
+🚀 Starting Interactive Chat Mode
+Type /help for commands, or just start chatting!
+
+You: 
 ```
 
 ## 🔌 API Compatibility

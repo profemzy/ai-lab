@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-import threading
+import os
 import time
 import uuid
-import os
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, Field, model_validator
-from transformers import TextIteratorStreamer
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 
 from labs import GenerationConfig, HFGenerator
 from labs.config import load_config
@@ -26,7 +24,7 @@ class ChatMessage(BaseModel):
 
 class ChatCompletionRequest(BaseModel):
     # Core OpenAI parameters
-    model: str = Field(default="gpt-oss-20b", description="Model to use for completion")
+    model: str = Field(default="deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", description="Model to use for completion")
     messages: List[ChatMessage] = Field(..., description="List of messages comprising the conversation")
     
     # Generation parameters (OpenAI-compatible names)

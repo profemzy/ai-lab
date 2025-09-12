@@ -683,7 +683,7 @@ docker build -t labs-api .
 
 ```bash
 # Run with GPU support and .env file configuration
-docker run -d --name labs-api-container \
+docker run -d --name labs-api \
   --gpus all \
   -p 8000:8000 \
   -v labs_hf_cache:/data \
@@ -694,7 +694,11 @@ docker run -d --name labs-api-container \
 docker ps
 
 # View logs
-docker logs labs-api-container
+docker logs labs-api
+
+# Access TUI Chat 
+docker exec -it lab-api labs-gen --interactive
+
 ```
 
 ### Docker Configuration

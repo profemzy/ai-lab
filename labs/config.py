@@ -114,19 +114,6 @@ def _merge_generation_table(cfg: GenerationConfig, tbl: Dict[str, Any]) -> None:
         cfg.add_generation_prompt = bool(tbl["add_generation_prompt"])
 
 
-def _merge_quantization_table(cfg: GenerationConfig, tbl: Dict[str, Any]) -> None:
-    if "load_in_4bit" in tbl:
-        cfg.load_in_4bit = bool(tbl["load_in_4bit"])
-    if "load_in_8bit" in tbl:
-        cfg.load_in_8bit = bool(tbl["load_in_8bit"])
-    if "bnb_4bit_quant_type" in tbl:
-        cfg.bnb_4bit_quant_type = str(tbl["bnb_4bit_quant_type"])
-    if "bnb_4bit_use_double_quant" in tbl:
-        cfg.bnb_4bit_use_double_quant = bool(tbl["bnb_4bit_use_double_quant"])
-    if "bnb_4bit_compute_dtype" in tbl:
-        dt = _coerce_dtype(str(tbl["bnb_4bit_compute_dtype"]))
-        if dt is not None:
-            cfg.bnb_4bit_compute_dtype = dt
 
 
 def _apply_env_overrides(cfg: GenerationConfig) -> None:
@@ -163,6 +150,7 @@ def _apply_env_overrides(cfg: GenerationConfig) -> None:
     trust_rc = _bool_env("LABS_TRUST_REMOTE_CODE")
     if trust_rc is not None:
         cfg.trust_remote_code = trust_rc
+    
 
     # Chat
     chat_tpl = _bool_env("LABS_USE_CHAT_TEMPLATE")
@@ -172,22 +160,6 @@ def _apply_env_overrides(cfg: GenerationConfig) -> None:
     if gen_prompt is not None:
         cfg.add_generation_prompt = gen_prompt
 
-    # Quantization
-    li4 = _bool_env("LABS_LOAD_IN_4BIT")
-    if li4 is not None:
-        cfg.load_in_4bit = li4
-    li8 = _bool_env("LABS_LOAD_IN_8BIT")
-    if li8 is not None:
-        cfg.load_in_8bit = li8
-    bnb_dt = _coerce_dtype(os.getenv("LABS_BNB_4BIT_COMPUTE_DTYPE"))
-    if bnb_dt is not None:
-        cfg.bnb_4bit_compute_dtype = bnb_dt
-    bnb_qt = os.getenv("LABS_BNB_4BIT_QUANT_TYPE")
-    if bnb_qt:
-        cfg.bnb_4bit_quant_type = bnb_qt
-    bnb_dq = _bool_env("LABS_BNB_4BIT_USE_DOUBLE_QUANT")
-    if bnb_dq is not None:
-        cfg.bnb_4bit_use_double_quant = bnb_dq
 
 
 def load_config(path: Optional[str] = None) -> GenerationConfig:
@@ -241,9 +213,6 @@ def load_config(path: Optional[str] = None) -> GenerationConfig:
     if isinstance(gen_tbl, dict):
         _merge_generation_table(cfg, gen_tbl)
 
-    q_tbl = data.get("quantization") or {}
-    if isinstance(q_tbl, dict):
-        _merge_quantization_table(cfg, q_tbl)
 
     # Environment overrides last
     _apply_env_overrides(cfg)

@@ -89,13 +89,6 @@ class LabsUI:
         table.add_row("Device Map", device_map, "✓")
         table.add_row("Precision", dtype, "✓")
         
-        # Quantization
-        if config.get("load_in_4bit"):
-            table.add_row("Quantization", "4-bit", "🔧")
-        elif config.get("load_in_8bit"):
-            table.add_row("Quantization", "8-bit", "🔧") 
-        else:
-            table.add_row("Quantization", "Disabled", "✓")
         
         panel = Panel(table, border_style="blue", padding=(1, 2))
         self.console.print(panel)

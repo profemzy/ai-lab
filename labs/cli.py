@@ -80,27 +80,6 @@ def build_arg_parser() -> argparse.ArgumentParser:
     # Trust remote code (for custom models)
     p.add_argument("--trust-remote-code", action="store_true", help="Enable trust_remote_code for model/tokenizer.")
 
-    # Quantization (optional)
-    p.add_argument("--load-in-4bit", action="store_true", help="Enable 4-bit quantization (bitsandbytes).")
-    p.add_argument("--load-in-8bit", action="store_true", help="Enable 8-bit quantization (bitsandbytes).")
-    p.add_argument(
-        "--bnb-4bit-compute-dtype",
-        type=str,
-        choices=["bf16", "bfloat16", "fp16", "float16", "fp32", "float32"],
-        default=None,
-        help="Compute dtype for 4-bit quantization."
-    )
-    p.add_argument(
-        "--bnb-4bit-quant-type",
-        type=str,
-        default=None,
-        help='Quantization type for 4-bit (e.g., "nf4").'
-    )
-    p.add_argument(
-        "--bnb-4bit-use-double-quant",
-        action="store_true",
-        help="Enable double quantization for 4-bit."
-    )
 
     # Config file
     p.add_argument("--config", type=str, default=None, help="Path to labs.toml for defaults (overridden by env/CLI).")
@@ -440,8 +419,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             "top_p": cfg.top_p,
             "device_map": cfg.device_map,
             "torch_dtype": str(cfg.torch_dtype),
-            "load_in_4bit": cfg.load_in_4bit,
-            "load_in_8bit": cfg.load_in_8bit
         }
         if use_ui:
             ui.show_config_summary(config_dict)
@@ -481,22 +458,6 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.trust_remote_code:
         cfg.trust_remote_code = True
 
-    # Quantization flags (CLI overrides config)
-    if args.load_in_4bit:
-        cfg.load_in_4bit = True
-    if args.load_in_8bit:
-        cfg.load_in_8bit = True
-    if args.bnb_4bit_quant_type is not None:
-        cfg.bnb_4bit_quant_type = args.bnb_4bit_quant_type
-    if args.bnb_4bit_use_double_quant:
-        cfg.bnb_4bit_use_double_quant = True
-    if args.bnb_4bit_compute_dtype is not None:
-        dt_map = {
-            "bf16": torch.bfloat16, "bfloat16": torch.bfloat16,
-            "fp16": torch.float16, "float16": torch.float16,
-            "fp32": torch.float32, "float32": torch.float32,
-        }
-        cfg.bnb_4bit_compute_dtype = dt_map.get(args.bnb_4bit_compute_dtype)
     
     # Show configuration summary
     if use_ui:
@@ -507,8 +468,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             "top_p": cfg.top_p,
             "device_map": cfg.device_map,
             "torch_dtype": str(cfg.torch_dtype),
-            "load_in_4bit": cfg.load_in_4bit,
-            "load_in_8bit": cfg.load_in_8bit
         }
         ui.show_config_summary(config_dict)
     

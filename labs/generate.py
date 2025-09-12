@@ -3,7 +3,15 @@ from typing import Any, Dict, List, Optional, Union
 
 import torch
 import threading
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+
+from .model_loader import load_model_and_tokenizer
+
+try:
+    from .rag_qa import TransactionRAG
+    RAG_AVAILABLE = True
+except ImportError:
+    RAG_AVAILABLE = False
 
 
 @dataclass
@@ -36,12 +44,7 @@ class GenerationConfig:
     eos_token_id: Optional[int] = None
     pad_token_id: Optional[int] = None
 
-    # Optional quantization (BitsAndBytes). Only one may be True.
-    load_in_4bit: bool = False
-    load_in_8bit: bool = False
-    bnb_4bit_quant_type: str = "nf4"
-    bnb_4bit_compute_dtype: Optional[torch.dtype] = None
-    bnb_4bit_use_double_quant: bool = True
+    
 
 
 class HFGenerator:
@@ -55,35 +58,65 @@ class HFGenerator:
         # Resolve dtype
         self.torch_dtype = self._resolve_dtype(self.config.torch_dtype)
 
-        # Load tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.config.model_name,
-            trust_remote_code=self.config.trust_remote_code,
-        )
-        # Ensure pad token exists (fallback to EOS)
-        if self.tokenizer.pad_token_id is None and self.tokenizer.eos_token_id is not None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        # Load model (accelerate handles placement for device_map='auto')
-        quant_config = self._build_quantization_config()
+        # Build model loading kwargs
         model_kwargs: Dict[str, Any] = {
             "device_map": self.config.device_map,
             "trust_remote_code": self.config.trust_remote_code,
-        }
-        if quant_config is not None:
-            model_kwargs["quantization_config"] = quant_config
-        else:
             # transformers >=4.56 deprecates torch_dtype in favor of dtype
-            model_kwargs["dtype"] = self.torch_dtype
+            "dtype": self.torch_dtype
+        }
 
-        self.model = AutoModelForCausalLM.from_pretrained(
+        # Load model and tokenizer
+        self.model, self.tokenizer = load_model_and_tokenizer(
             self.config.model_name,
-            **model_kwargs,
+            **model_kwargs
         )
 
         # Cache generation token IDs
         self.eos_token_id = self.config.eos_token_id or self.tokenizer.eos_token_id
         self.pad_token_id = self.config.pad_token_id or self.tokenizer.pad_token_id
+        
+        # Initialize RAG system for transaction queries
+        self.transaction_rag = None
+        if RAG_AVAILABLE:
+            try:
+                self.transaction_rag = TransactionRAG()
+                print("✅ Transaction RAG system initialized")
+            except Exception as e:
+                print(f"⚠️  Transaction RAG not available: {e}")
+
+    def _is_transaction_question(self, text: str) -> bool:
+        """Check if a question is about transactions."""
+        if not self.transaction_rag:
+            return False
+            
+        transaction_keywords = [
+            'expense', 'spend', 'spent', 'cost', 'price', 'pay', 'paid',
+            'income', 'earn', 'earned', 'revenue', 'profit',
+            'transaction', 'purchase', 'buy', 'bought',
+            'total', 'largest', 'biggest', 'most expensive',
+            'recent', 'last', 'latest',
+            'summary', 'overview', 'breakdown',
+            'december', 'november', 'january', 'february', 'march',
+            'april', 'may', 'june', 'july', 'august', 'september', 'october',
+            'software', 'hardware', 'fuel', 'office', 'vehicle',
+            'microsoft', 'adobe', 'ikea', 'starbucks', 'netflix'
+        ]
+        
+        text_lower = text.lower()
+        return any(keyword in text_lower for keyword in transaction_keywords)
+    
+    def _extract_user_message(self, prompt_or_messages: Union[str, List[Dict[str, str]]]) -> str:
+        """Extract the user message for transaction detection."""
+        if isinstance(prompt_or_messages, str):
+            return prompt_or_messages
+        
+        # Find the last user message
+        for msg in reversed(prompt_or_messages):
+            if msg.get("role") == "user":
+                return msg.get("content", "")
+        
+        return ""
 
     def _resolve_dtype(self, explicit: Optional[torch.dtype]) -> torch.dtype:
         if explicit is not None:
@@ -98,41 +131,6 @@ class HFGenerator:
             return torch.float16
         return torch.float32
 
-    def _build_quantization_config(self) -> Optional[BitsAndBytesConfig]:
-        """
-        Build BitsAndBytes quantization config if requested via config.
-        Raises a RuntimeError with guidance if bitsandbytes is not installed.
-        """
-        if not (self.config.load_in_4bit or self.config.load_in_8bit):
-            return None
-        if self.config.load_in_4bit and self.config.load_in_8bit:
-            raise ValueError("Only one of load_in_4bit or load_in_8bit may be True.")
-
-        try:
-            import bitsandbytes as bnb  # noqa: F401
-        except Exception as e:
-            raise RuntimeError(
-                "Quantization requested but bitsandbytes is not installed. "
-                "Install with: uv add 'bitsandbytes>=0.43.0' or pip install bitsandbytes"
-            ) from e
-
-        if self.config.load_in_8bit:
-            return BitsAndBytesConfig(load_in_8bit=True)
-
-        # 4-bit defaults: prefer BF16 compute if supported, else FP16
-        compute_dtype = self.config.bnb_4bit_compute_dtype
-        if compute_dtype is None:
-            if torch.cuda.is_available() and hasattr(torch.cuda, "is_bf16_supported") and torch.cuda.is_bf16_supported():
-                compute_dtype = torch.bfloat16
-            else:
-                compute_dtype = torch.float16
-
-        return BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type=self.config.bnb_4bit_quant_type,
-            bnb_4bit_use_double_quant=self.config.bnb_4bit_use_double_quant,
-            bnb_4bit_compute_dtype=compute_dtype,
-        )
 
     def _build_inputs(
         self,
@@ -241,6 +239,18 @@ class HFGenerator:
         Single-shot text generation. Returns only newly generated text
         (excludes the prompt portion).
         """
+        # Check if this is a transaction question and use RAG if available
+        user_message = self._extract_user_message(prompt_or_messages)
+        if self._is_transaction_question(user_message):
+            try:
+                rag_answer = self.transaction_rag.answer_question(user_message)
+                # If RAG gives a useful answer (not the fallback message), use it
+                if not rag_answer.startswith("I can answer questions"):
+                    return rag_answer
+            except Exception as e:
+                print(f"⚠️  RAG failed, falling back to LLM: {e}")
+        
+        # Fall back to normal LLM generation
         inputs = self._build_inputs(prompt_or_messages)
         inputs = self._maybe_move_inputs_to_model_device(inputs)
 
@@ -273,6 +283,21 @@ class HFGenerator:
         """
         Streaming text generation. Yields incremental text chunks as they arrive.
         """
+        # Check if this is a transaction question and simulate streaming for RAG
+        user_message = self._extract_user_message(prompt_or_messages)
+        if self._is_transaction_question(user_message):
+            try:
+                rag_answer = self.transaction_rag.answer_question(user_message)
+                # If RAG gives a useful answer, simulate streaming
+                if not rag_answer.startswith("I can answer questions"):
+                    words = rag_answer.split()
+                    for word in words:
+                        yield word + " "
+                    return
+            except Exception as e:
+                print(f"⚠️  RAG failed, falling back to LLM: {e}")
+        
+        # Fall back to normal streaming generation
         inputs = self._build_inputs(prompt_or_messages)
         inputs = self._maybe_move_inputs_to_model_device(inputs)
 

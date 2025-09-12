@@ -1,0 +1,128 @@
+Date,Type,Description,Amount,Category,Payment Method,Status,Reference,Receipt URL
+2024-12-06,Income,Daniel Howard - Web Development,3567.18,,,received,,
+2024-12-06,Expense,Neptune HX100G,-1295.83,computer_equipment,credit_card,paid,Minisforum,https://tmsappstorage.blob.core.windows.net/receipts/de9d50f5-6c8a-4a92-b9a1-b379034d8fdd.png
+2024-12-05,Expense,Office365 Subscription,-15.99,software,credit_card,paid,Microsoft,https://tmsappstorage.blob.core.windows.net/receipts/a1b2c3d4-e5f6-7890-1234-56789abcdef0.png
+2024-12-04,Income,Client Payment - Mobile App,2850.00,,,received,TechCorp,
+2024-12-04,Expense,Adobe Creative Suite,-52.99,software,credit_card,paid,Adobe,https://tmsappstorage.blob.core.windows.net/receipts/f9e8d7c6-b5a4-3210-9876-543210fedcba.png
+2024-12-03,Expense,Fuel for Vehicle,-89.45,fuel,credit_card,paid,Shell,https://tmsappstorage.blob.core.windows.net/receipts/12345678-9abc-def0-1234-56789abcdef0.png
+2024-12-03,Expense,Business Lunch,-67.89,meals_entertainment,credit_card,paid,Restaurant ABC,https://tmsappstorage.blob.core.windows.net/receipts/abcdef12-3456-7890-abcd-ef1234567890.png
+2024-12-02,Expense,Home Office Desk,-435.00,furniture,credit_card,paid,IKEA,https://tmsappstorage.blob.core.windows.net/receipts/98765432-10ab-cdef-9876-543210abcdef.png
+2024-12-02,Expense,Internet Service,-79.99,telephone,credit_card,paid,Comcast,https://tmsappstorage.blob.core.windows.net/receipts/fedcba09-8765-4321-fedc-ba0987654321.png
+2024-12-01,Income,Freelance Design Project,1850.00,,,received,Creative Studio,
+2024-11-30,Expense,Legal Consultation,-350.00,professional_fees,credit_card,paid,Johnson Law,https://tmsappstorage.blob.core.windows.net/receipts/11223344-5566-7788-9900-aabbccddeeff.png
+2024-11-29,Expense,Printer Paper & Supplies,-45.67,office_supplies,credit_card,paid,Staples,https://tmsappstorage.blob.core.windows.net/receipts/aabbccdd-eeff-1122-3344-556677889900.png
+2024-11-28,Expense,Vehicle Maintenance,-285.50,vehicle_expenses,credit_card,paid,AutoShop Pro,https://tmsappstorage.blob.core.windows.net/receipts/ffeeddcc-bbaa-9988-7766-554433221100.png
+2024-11-27,Expense,Coffee Shop Meeting,-18.75,meals_entertainment,credit_card,paid,Starbucks,https://tmsappstorage.blob.core.windows.net/receipts/00112233-4455-6677-8899-aabbccddeeff.png
+2024-11-26,Income,Consulting Services,2200.00,,,received,TechStart Inc,
+2024-11-25,Expense,Hardware Components,-165.99,hardware,credit_card,paid,Best Buy,https://tmsappstorage.blob.core.windows.net/receipts/ccddaabb-9988-7766-5544-332211009988.png
+2024-11-24,Expense,Training Course,-299.00,training,credit_card,paid,Udemy,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-11-23,Expense,Office Rent,-1200.00,rent,bank_transfer,paid,Property Management,
+2024-11-22,Expense,Client Entertainment,-125.45,entertainment,credit_card,paid,Theater District,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-11-21,Income,Web Development Retainer,1500.00,,,received,StartupXYZ,
+2024-11-20,Expense,Mobile Phone Bill,-65.00,telephone,credit_card,paid,Verizon,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-11-19,Expense,Equipment Repair,-150.00,repairs,credit_card,paid,Tech Repair Co,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-11-18,Expense,Parking Fees,-25.00,travel,credit_card,paid,City Parking,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-11-17,Expense,Grocery Store,-89.23,food,credit_card,paid,Whole Foods,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-11-16,Income,Logo Design Project,750.00,,,received,Local Business,
+2024-11-15,Expense,Cloud Storage Service,-9.99,software,credit_card,paid,Dropbox,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-11-14,Expense,Business Insurance,-245.00,other,bank_transfer,paid,State Farm,
+2024-11-13,Expense,Fuel for Travel,-75.60,fuel,credit_card,paid,BP,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-11-12,Expense,Restaurant Meal,-42.50,food,credit_card,paid,Olive Garden,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-11-11,Income,E-commerce Website,3200.00,,,received,RetailCorp,
+2024-11-10,Expense,Software License,-199.00,software,credit_card,paid,JetBrains,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-11-09,Expense,Office Supplies,-67.45,office_supplies,credit_card,paid,Office Depot,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-11-08,Expense,Vehicle Insurance,-156.78,vehicle,bank_transfer,paid,Geico,
+2024-11-07,Expense,Client Meeting Lunch,-55.25,meals_entertainment,credit_card,paid,Panera Bread,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-11-06,Income,Database Design,1950.00,,,received,DataFlow Ltd,
+2024-11-05,Expense,Home Office Supplies,-123.89,home_office,credit_car,paid,Amazon,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-11-04,Expense,Professional Development,-89.99,training,credit_card,paid,Coursera,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-11-03,Expense,Equipment Maintenance,-175.00,maintenance,credit_card,paid,TechFix Pro,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-11-02,Expense,Fuel Station,-68.90,fuel,credit_card,paid,Chevron,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-11-01,Income,Monthly Retainer,2000.00,,,received,BigCorp Inc,
+2024-10-31,Expense,Halloween Office Decorations,-45.99,supplies,credit_card,paid,Party City,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-10-30,Expense,Web Hosting Service,-29.99,software,credit_card,paid,HostGator,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-10-29,Expense,Business Travel,-245.67,travel,credit_card,paid,United Airlines,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-10-28,Income,API Development,2750.00,,,received,TechSolutions,
+2024-10-27,Expense,Domain Registration,-12.99,software,credit_card,paid,GoDaddy,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-10-26,Expense,Office Coffee Machine,-289.00,supplies,credit_card,paid,Keurig,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-10-25,Expense,Accountant Fees,-450.00,professional_fees,bank_transfer,paid,CPA Services,
+2024-10-24,Expense,Marketing Materials,-178.50,supplies,credit_card,paid,VistaPrint,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-10-23,Income,UI/UX Design Project,1675.00,,,received,DesignStudio,
+2024-10-22,Expense,Computer Mouse & Keyboard,-125.99,computer_equipment,credit_card,paid,Logitech,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-10-21,Expense,Business Phone Service,-45.00,telephone,credit_card,paid,RingCentral,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-10-20,Expense,Lunch Meeting with Client,-78.45,meals_entertainment,credit_card,paid,Cheesecake Factory,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-10-19,Expense,Parking Downtown,-15.00,travel,credit_card,paid,SpotHero,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-10-18,Income,WordPress Development,1425.00,,,received,BlogCorp,
+2024-10-17,Expense,SSL Certificate,-99.00,software,credit_card,paid,DigiCert,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-10-16,Expense,Office Chair Repair,-85.00,repairs,credit_card,paid,Furniture Fix,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-10-15,Expense,Vehicle Fuel,-72.35,fuel,credit_card,paid,Mobil,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-10-14,Expense,Grocery Shopping,-156.78,food,credit_card,paid,Kroger,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-10-13,Income,E-learning Platform Development,3850.00,,,received,EduTech Solutions,
+2024-10-12,Expense,Project Management Tool,-19.99,software,credit_card,paid,Trello,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-10-11,Expense,Business Banking Fees,-25.00,other,bank_transfer,paid,Chase Bank,
+2024-10-10,Expense,Networking Event,-95.00,entertainment,credit_card,paid,TechMeetup,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-10-09,Expense,Video Conferencing Software,-14.99,software,credit_card,paid,Zoom,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-10-08,Income,Database Optimization,2100.00,,,received,DataCorp,
+2024-10-07,Expense,Office Cleaning Service,-150.00,maintenance,credit_card,paid,CleanPro,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-10-06,Expense,Computer Monitor,-345.99,computer_equipment,credit_card,paid,Dell,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-10-05,Expense,Business Lunch,-62.30,meals_entertainment,credit_card,paid,Applebees,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-10-04,Expense,Fuel for Client Visit,-58.75,fuel,credit_card,paid,Texaco,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-10-03,Income,Mobile App Updates,1320.00,,,received,AppCorp,
+2024-10-02,Expense,Bad Debt Write-off,-500.00,bad_debts,other,written_off,Old Client,
+2024-10-01,Expense,Professional Liability Insurance,-189.00,other,bank_transfer,paid,Progressive,
+2024-09-30,Income,Quarter-end Bonus,2500.00,,,received,MainClient,
+2024-09-29,Expense,Office Supplies Restock,-89.45,office_supplies,credit_card,paid,Costco,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-09-28,Expense,Software Update License,-149.99,software,credit_card,paid,Microsoft,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-09-27,Expense,Client Dinner,-134.67,meals_entertainment,credit_card,paid,Ruth's Chris,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-09-26,Income,System Integration Project,2950.00,,,received,Enterprise Ltd,
+2024-09-25,Expense,Vehicle Oil Change,-45.99,vehicle_expenses,credit_card,paid,Jiffy Lube,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-09-24,Expense,Home Office Lighting,-78.99,home_office,credit_card,paid,Home Depot,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-09-23,Expense,Conference Registration,-395.00,training,credit_card,paid,TechConf 2024,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-09-22,Expense,Internet Upgrade,-99.99,telephone,credit_card,paid,Spectrum,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-09-21,Income,Custom Software Development,4200.00,,,received,Manufacturing Co,
+2024-09-20,Expense,Backup Drive,-189.99,computer_equipment,credit_card,paid,Seagate,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-09-19,Expense,Office Rent September,-1200.00,rent,bank_transfer,paid,Property Management,
+2024-09-18,Expense,Business Cards Printing,-45.00,supplies,credit_card,paid,FedEx Office,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-09-17,Expense,Fuel for Business Travel,-92.45,fuel,credit_card,paid,Shell,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-09-16,Income,Website Redesign,1875.00,,,received,RetailStore,
+2024-09-15,Expense,Antivirus Software,-79.99,software,credit_card,paid,Norton,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-09-14,Expense,Professional Development Book,-39.99,training,credit_card,paid,Amazon,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-09-13,Expense,Client Meeting Coffee,-12.75,meals_entertainment,credit_card,paid,Coffee Bean,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-09-12,Expense,Equipment Insurance,-145.00,other,bank_transfer,paid,Farmers Insurance,
+2024-09-11,Income,API Integration Services,2650.00,,,received,SaaS Company,
+2024-09-10,Expense,Wireless Mouse,-35.99,computer_equipment,credit_card,paid,Amazon,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-09-09,Expense,Office Utilities,-125.67,telephone,bank_transfer,paid,Electric Company,
+2024-09-08,Expense,Parking for Client Meeting,-20.00,travel,credit_card,paid,ParkWhiz,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-09-07,Expense,Lunch with Team,-89.45,meals_entertainment,credit_card,paid,TGI Fridays,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-09-06,Income,Cloud Migration Project,3450.00,,,received,Legacy Corp,
+2024-09-05,Expense,Printer Cartridges,-67.99,office_supplies,credit_card,paid,Best Buy,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-09-04,Expense,Vehicle Maintenance Check,-195.00,vehicle_expenses,credit_card,paid,AutoCare Plus,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-09-03,Expense,Software Documentation Tool,-25.99,software,credit_card,paid,Notion,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-09-02,Expense,Business Networking Lunch,-75.50,entertainment,credit_card,paid,Capital Grille,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-09-01,Income,September Retainer,2000.00,,,received,MainClient,
+2024-08-31,Expense,Month-end Office Supplies,-123.45,office_supplies,credit_card,paid,Walmart,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-08-30,Expense,Fuel for Month,-245.89,fuel,credit_card,paid,BP,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-08-29,Income,Security Audit Services,1950.00,,,received,FinTech Startup,
+2024-08-28,Expense,Professional Training Course,-299.00,training,credit_card,paid,LinkedIn Learning,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-08-27,Expense,Office Desk Organizer,-34.99,home_office,credit_card,paid,Target,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-08-26,Expense,Business Travel Hotel,-189.00,travel,credit_card,paid,Marriott,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-08-25,Expense,Client Entertainment Dinner,-156.78,entertainment,credit_card,paid,Morton's,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-08-24,Income,Performance Optimization,2750.00,,,received,HighTraffic Site,
+2024-08-23,Expense,Backup Service Subscription,-15.99,software,credit_card,paid,Backblaze,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-08-22,Expense,Office Phone System,-89.99,telephone,credit_card,paid,Vonage,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-08-21,Expense,Equipment Calibration,-125.00,maintenance,credit_card,paid,TechCal Services,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-08-20,Expense,Fuel Stop,-67.45,fuel,credit_card,paid,Chevron,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png
+2024-08-19,Income,Database Design & Setup,2100.00,,,received,New Startup,
+2024-08-18,Expense,Hardware Testing Tools,-234.99,hardware,credit_card,paid,Newegg,https://tmsappstorage.blob.core.windows.net/receipts/77665544-3322-1100-9988-776655443322.png
+2024-08-17,Expense,Office Cleaning Supplies,-45.67,supplies,credit_card,paid,CVS Pharmacy,https://tmsappstorage.blob.core.windows.net/receipts/44332211-0099-8877-6655-443322110099.png
+2024-08-16,Expense,Professional Association Dues,-195.00,professional_fees,credit_card,paid,IEEE,https://tmsappstorage.blob.core.windows.net/receipts/11009988-7766-5544-3322-110099887766.png
+2024-08-15,Expense,Vehicle Insurance Renewal,-312.45,vehicle,bank_transfer,paid,State Farm,
+2024-08-14,Income,Consulting Retainer August,2000.00,,,received,MainClient,
+2024-08-13,Expense,Project Collaboration Tool,-29.99,software,credit_card,paid,Slack,https://tmsappstorage.blob.core.windows.net/receipts/88776655-4433-2211-0099-887766554433.png
+2024-08-12,Expense,Business Lunch Meeting,-78.90,meals_entertainment,credit_card,paid,Red Lobster,https://tmsappstorage.blob.core.windows.net/receipts/55443322-1100-9988-7766-554433221100.png
+2024-08-11,Expense,Parking for Conference,-35.00,travel,credit_card,paid,Conference Center,https://tmsappstorage.blob.core.windows.net/receipts/22110099-8877-6655-4433-221100998877.png
+2024-08-10,Expense,Office Supply Restocking,-156.78,office_supplies,credit_card,paid,OfficeMax,https://tmsappstorage.blob.core.windows.net/receipts/99887766-5544-3322-1100-998877665544.png
+2024-08-09,Income,Custom Integration Project,3275.00,,,received,Enterprise Client,
+2024-08-08,Expense,Software License Renewal,-399.00,software,credit_card,paid,IntelliJ IDEA,https://tmsappstorage.blob.core.windows.net/receipts/66554433-2211-0099-8877-665544332211.png
+2024-08-07,Expense,Fuel for Client Visits,-89.23,fuel,credit_card,paid,Exxon,https://tmsappstorage.blob.core.windows.net/receipts/33221100-9988-7766-5544-332211009988.png
+2024-08-06,Expense,Office Equipment Repair,-175.00,repairs,credit_card,paid,TechRepair Pro,https://tmsappstorage.blob.core.windows.net/receipts/00998877-6655-4433-2211-009988776655.png

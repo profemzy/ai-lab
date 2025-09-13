@@ -8,12 +8,13 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel, Field
 
 from labs import GenerationConfig, HFGenerator
 from labs.config import load_config
 from labs.embeddings import get_embedding_generator
+from labs.tts import get_tts_instance
 
 
 # OpenAI-compatible request/response models
@@ -473,6 +474,24 @@ def compute_similarities(req: SimilarityRequest) -> SimilarityResponse:
         raise HTTPException(status_code=500, detail=f"Similarity computation failed: {e}") from e
 
 
+# TTS request/response models
+class TTSRequest(BaseModel):
+    text: str = Field(..., description="Text to convert to speech")
+    model: Optional[str] = Field(default="suno/bark", description="TTS model to use")
+
+# Add TTS endpoint
+@app.post("/v1/tts")
+def text_to_speech(request: TTSRequest):
+    """Generate speech audio from text input."""
+    if not request.text:
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    try:
+        tts = get_tts_instance()
+        audio_bytes = tts.synthesize(request.text)
+        # Return audio as WAV bytes with appropriate headers
+        return Response(content=audio_bytes, media_type="audio/wav")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS synthesis failed: {e}") from e
 
 
 def main() -> int:

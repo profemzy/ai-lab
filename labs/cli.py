@@ -41,6 +41,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
   labs-gen --messages-json '[{"role":"user","content":"Hello!"}]'
   labs-gen --prompt "Write Python code" --model codellama/CodeLlama-7b-Instruct-hf
   labs-gen --interactive  # Interactive chat mode
+  labs-gen --prompt "Hello" --tts-output output.wav  # Generate speech audio
         """
     )
     # Input
@@ -89,6 +90,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--interactive", "-i", action="store_true", help="Start interactive chat mode.")
     p.add_argument("--show-config", action="store_true", help="Display configuration and exit.")
     p.add_argument("--show-gpu", action="store_true", help="Display GPU information and exit.")
+
+    # TTS options
+    p.add_argument("--tts-output", type=str, default=None, help="Output WAV file path for text-to-speech synthesis.")
 
     return p
 
@@ -428,14 +432,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     
     # Validate input arguments
-    if not args.interactive and not args.prompt and not args.messages_json:
+    if not args.interactive and not args.prompt and not args.messages_json and not args.tts_output:
         if use_ui:
             ui.error_panel(
                 "No input provided", 
-                "Use --prompt for text, --messages-json for chat, or --interactive for chat mode"
+                "Use --prompt for text, --messages-json for chat, --tts-output for TTS, or --interactive for chat mode"
             )
         else:
-            print("Error: Provide either --prompt, --messages-json, or --interactive", file=sys.stderr)
+            print("Error: Provide either --prompt, --messages-json, --tts-output, or --interactive", file=sys.stderr)
         return 2
 
     # Apply CLI overrides to config
@@ -458,7 +462,6 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.trust_remote_code:
         cfg.trust_remote_code = True
 
-    
     # Show configuration summary
     if use_ui:
         config_dict = {
@@ -470,7 +473,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "torch_dtype": str(cfg.torch_dtype),
         }
         ui.show_config_summary(config_dict)
-    
+
     # Initialize generator with beautiful loading animation
     if use_ui:
         with ui.model_loading_progress(cfg.model_name):
@@ -490,7 +493,60 @@ def main(argv: Optional[List[str]] = None) -> int:
         except Exception as e:
             print(f"Error: Failed to load model: {e}", file=sys.stderr)
             return 2
-    
+
+    # Handle TTS mode
+    if args.tts_output:
+        # Use prompt or messages_json as input text
+        if args.prompt:
+            text_input = args.prompt
+        elif args.messages_json:
+            try:
+                messages = _parse_messages(args.messages_json)
+                text_input = " ".join(msg["content"] for msg in messages if "content" in msg)
+            except Exception as e:
+                error_msg = f"Error parsing messages JSON: {e}"
+                if use_ui:
+                    ui.error_panel(error_msg, "Check JSON format: [{\"role\":\"user\",\"content\":\"...\"}]")
+                else:
+                    print(error_msg, file=sys.stderr)
+                return 2
+        else:
+            if use_ui:
+                ui.error_panel("No input text provided for TTS")
+            else:
+                print("Error: No input text provided for TTS", file=sys.stderr)
+            return 2
+
+        # Lazy import TTS only when needed
+        try:
+            from labs.tts import get_tts_instance
+        except Exception as e:
+            if use_ui:
+                ui.error_panel(
+                    f"Failed to initialize TTS module: {e}",
+                    "Ensure TTS dependencies are installed or switch to non-TTS mode"
+                )
+            else:
+                print(f"Error: Failed to initialize TTS module: {e}", file=sys.stderr)
+            return 2
+
+        tts = get_tts_instance()
+        try:
+            audio_bytes = tts.synthesize(text_input)
+            with open(args.tts_output, "wb") as f:
+                f.write(audio_bytes)
+            if use_ui:
+                ui.console.print(f"[green]Audio saved to {args.tts_output}[/green]")
+            else:
+                print(f"Audio saved to {args.tts_output}")
+            return 0
+        except Exception as e:
+            if use_ui:
+                ui.error_panel(f"TTS synthesis failed: {e}")
+            else:
+                print(f"Error: TTS synthesis failed: {e}", file=sys.stderr)
+            return 2
+
     # Handle interactive chat mode
     if args.interactive:
         return interactive_chat_mode(gen, use_ui)

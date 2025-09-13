@@ -150,7 +150,7 @@ def interactive_chat_mode(generator: HFGenerator, use_ui: bool = True) -> int:
             try:
                 # Get user input
                 if use_ui:
-                    user_input = ui.input_prompt("You")
+                    user_input = ui.input_prompt("💬 You")
                 else:
                     user_input = input("You: ")
                 
@@ -182,6 +182,10 @@ def interactive_chat_mode(generator: HFGenerator, use_ui: bool = True) -> int:
             
             # Add to conversation history
             interactive_cli.history.add_message("user", user_input)
+            
+            # Add a subtle separator for better readability
+            if use_ui:
+                ui.console.print()
             
             # Generate response with timing
             start_time = time.time()

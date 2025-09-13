@@ -5,7 +5,27 @@ Model loader for base models.
 from pathlib import Path
 from typing import Optional, Tuple
 import torch
+import logging
+import warnings
+import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# Suppress all transformers warnings and progress bars
+warnings.filterwarnings("ignore")
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+# Disable tqdm progress bars  
+os.environ["TQDM_DISABLE"] = "1"
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+
+# Suppress specific loggers
+logging.getLogger("transformers").setLevel(logging.ERROR)
+logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
+logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
+logging.getLogger("transformers.generation_utils").setLevel(logging.ERROR)
+logging.getLogger("accelerate").setLevel(logging.ERROR)
+logging.getLogger("torch").setLevel(logging.ERROR)
 
 
 

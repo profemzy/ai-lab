@@ -1,9 +1,13 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
+import logging
 
 import torch
 import threading
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+
+# Suppress rope_scaling warnings from transformers
+logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
 from .model_loader import load_model_and_tokenizer
 

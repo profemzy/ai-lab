@@ -122,7 +122,7 @@ class InteractiveCLI:
         """Display help information."""
         if self.use_ui:
             help_text = """
-[bold cyan]Interactive Mode Commands:[/bold cyan]
+[bold cyan]💬 Interactive Mode Commands:[/bold cyan]
 
 [yellow]/help[/yellow]           - Show this help message
 [yellow]/save[/yellow]           - Save current conversation  
@@ -131,10 +131,14 @@ class InteractiveCLI:
 [yellow]/clear[/yellow]          - Clear current conversation
 [yellow]/stats[/yellow]          - Show session statistics
 [yellow]/config[/yellow]         - Show current model configuration
-[yellow]/model[/yellow]          - Switch model (if supported)
 [yellow]/exit, /quit[/yellow]    - Exit interactive mode
 
-[dim]Or just type your message to chat with the AI![/dim]
+[bold green]💡 Tips:[/bold green]
+• Press [yellow]Ctrl+C[/yellow] to interrupt generation
+• Press [yellow]Ctrl+D[/yellow] or type [yellow]exit[/yellow] to quit
+• The model shows reasoning process in [yellow]yellow[/yellow] text
+
+[dim]Just type your message to start chatting![/dim]
             """
             ui.console.print(help_text)
         else:

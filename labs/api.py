@@ -474,17 +474,24 @@ def compute_similarities(req: SimilarityRequest) -> SimilarityResponse:
         raise HTTPException(status_code=500, detail=f"Similarity computation failed: {e}") from e
 
 
+# TTS request/response models
+class TTSRequest(BaseModel):
+    text: str = Field(..., description="Text to convert to speech")
+    model: Optional[str] = Field(default="suno/bark", description="TTS model to use")
+
 # Add TTS endpoint
 @app.post("/v1/tts")
-def text_to_speech(request: dict):
+def text_to_speech(request: TTSRequest):
     """Generate speech audio from text input."""
-    text = request.get("text")
-    if not text:
-        raise HTTPException(status_code=400, detail="Missing 'text' in request body")
-    tts = get_tts_instance()
-    audio_bytes = tts.synthesize(text)
-    # Return audio as WAV bytes with appropriate headers
-    return Response(content=audio_bytes, media_type="audio/wav")
+    if not request.text:
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    try:
+        tts = get_tts_instance()
+        audio_bytes = tts.synthesize(request.text)
+        # Return audio as WAV bytes with appropriate headers
+        return Response(content=audio_bytes, media_type="audio/wav")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS synthesis failed: {e}") from e
 
 
 def main() -> int:

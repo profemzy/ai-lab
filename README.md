@@ -7,7 +7,8 @@ A high-performance, production-ready local LLM inference server that provides Op
 - **🎨 Beautiful Terminal UI**: Modern, interactive CLI with progress bars, animations, and rich formatting
 - **💬 Interactive Chat Mode**: Full conversation management with save/load functionality and session statistics
 - **🧠 Hybrid AI Intelligence**: RAG system for transaction questions + full LLM capabilities for general queries
-- **🔌 OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions`, `/v1/embeddings`, `/v1/similarities`, and `/v1/models` endpoints
+- **🔊 Text-to-Speech Integration**: High-quality speech synthesis using suno/bark model with CLI and API support
+- **🔌 OpenAI API Compatibility**: Drop-in replacement for OpenAI's API with `/v1/chat/completions`, `/v1/embeddings`, `/v1/similarities`, `/v1/tts`, and `/v1/models` endpoints
 - **⚡ High-Performance Inference**: Optimized for NVIDIA GPUs with automatic BF16/FP16 precision and device mapping
 - **🚀 Flexible Deployment**: Enhanced CLI tool for development and FastAPI server for production workloads
 - **⚙️ Advanced Configuration**: TOML-based configuration with environment variable overrides
@@ -16,7 +17,7 @@ A high-performance, production-ready local LLM inference server that provides Op
 
 ## 📋 System Requirements
 
-- **Python**: 3.12 or higher
+- **Python**: 3.13 or higher (recommended for optimal performance)
 - **GPU**: NVIDIA GPU with ≥16GB VRAM (recommended)
 - **CUDA**: Recent CUDA-capable driver
 - **Network**: Internet access for initial model downloads from HuggingFace Hub
@@ -29,6 +30,7 @@ A high-performance, production-ready local LLM inference server that provides Op
 labs/
 ├── generate.py     # Core LLM generator with HuggingFace Transformers
 ├── embeddings.py   # Text embedding generator with sentence-transformers
+├── tts.py          # Text-to-speech synthesis with suno/bark
 ├── cli.py          # Enhanced command-line interface (labs-gen)
 ├── ui.py           # Beautiful terminal UI components
 ├── interactive.py  # Interactive chat & conversation management
@@ -80,6 +82,10 @@ uv run labs-gen --show-gpu
 # Display configuration
 uv run labs-gen --show-config
 
+# 🔊 Text-to-Speech Generation (NEW!)
+uv run labs-gen --prompt "Hello, world!" --tts-output speech.wav
+uv run labs-gen --prompt "The weather is nice today" --tts-output weather.wav
+
 # Plain output (no UI styling)
 uv run labs-gen --prompt "Hello" --no-ui
 ```
@@ -130,9 +136,15 @@ curl -N -s -X POST http://localhost:8000/v1/chat/completions \
     "max_tokens": 64,
     "stream": true
   }'
+
+# 🔊 Text-to-Speech Generation (NEW!)
+curl -X POST http://localhost:8000/v1/tts \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Hello, this is AI Labs text to speech!"}' \
+  --output speech.wav
 ```
 
-> **PyTorch Note**: This project uses PyTorch nightly CUDA wheels for optimal performance. To use stable wheels instead, modify the `[tool.uv.sources]` section in `pyproject.toml`.
+> **PyTorch Note**: This project uses PyTorch 2.8.0 with CUDA 12.8 for optimal performance and security. All dependencies are pinned for stability.
 
 ## ⚙️ Configuration
 
@@ -400,6 +412,7 @@ The API provides OpenAI-compatible endpoints for seamless integration:
 - **`POST /v1/chat/completions`** - Create chat completions (streaming and non-streaming)
 - **`POST /v1/embeddings`** - Generate text embeddings
 - **`POST /v1/similarities`** - Compute pairwise similarities between texts
+- **`POST /v1/tts`** - Generate speech audio from text (returns WAV format)
 
 ### Client Usage Example
 
@@ -494,6 +507,74 @@ Place your transaction CSV file at `data/all_transactions.csv` with columns:
 - `Amount`: Transaction amount (negative for expenses)
 - `Description`: Transaction description
 - `Category`: Spending category (optional)
+
+## 🔊 Text-to-Speech (TTS)
+
+The system includes high-quality text-to-speech capabilities using the suno/bark model, providing both CLI and API interfaces for audio generation.
+
+### TTS Features
+
+- **High-Quality Audio**: Uses suno/bark model for natural-sounding speech
+- **CLI Integration**: Generate audio directly from command line
+- **API Endpoint**: RESTful `/v1/tts` endpoint for programmatic access
+- **WAV Output**: Generates standard WAV audio files
+- **GPU Acceleration**: Optimized for NVIDIA GPUs with CUDA support
+
+### CLI Usage Examples
+
+```bash
+# Generate speech from text prompt
+uv run labs-gen --prompt "Hello, world!" --tts-output greeting.wav
+
+# Combine LLM generation with TTS
+uv run labs-gen --prompt "Tell me a joke about AI" --tts-output joke.wav --max-new-tokens 50
+
+# Use with chat messages
+uv run labs-gen --messages-json '[{"role":"user","content":"How are you today?"}]' --tts-output response.wav
+```
+
+### API Usage Examples
+
+```bash
+# Generate speech via API
+curl -X POST http://localhost:8000/v1/tts \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Welcome to AI Labs TTS system!"}' \
+  --output welcome.wav
+
+# Using with custom model (future extension)
+curl -X POST http://localhost:8000/v1/tts \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Custom model example", "model": "suno/bark"}' \
+  --output custom.wav
+```
+
+### Python Client Usage
+
+```python
+import requests
+
+# Generate TTS audio
+response = requests.post(
+    "http://localhost:8000/v1/tts",
+    json={"text": "This is a test of the TTS system"},
+    headers={"Content-Type": "application/json"}
+)
+
+# Save audio file
+with open("test_speech.wav", "wb") as f:
+    f.write(response.content)
+
+print(f"Generated audio: {len(response.content)} bytes")
+```
+
+### TTS Configuration
+
+The TTS system uses suno/bark by default, which provides:
+- **Multi-language support**: English and other languages
+- **Natural prosody**: Realistic speech patterns and intonation
+- **GPU optimization**: Efficient inference on CUDA devices
+- **High quality**: 24kHz sample rate with 16-bit precision
 
 ## 🔗 Text Embeddings
 

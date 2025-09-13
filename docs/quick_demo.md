@@ -7,8 +7,9 @@ Audience: AI Engineering • MLOps • DevOps • SMB Owners
 ## Introduction
 
 AI Labs is a local LLM inference server that:
-- Exposes OpenAI-compatible endpoints (chat completions, embeddings, similarities) for easy integration.
+- Exposes OpenAI-compatible endpoints (chat completions, embeddings, similarities, TTS) for easy integration.
 - Ships with a polished CLI and interactive chat UI for rapid experimentation.
+- Includes high-quality text-to-speech using suno/bark for audio generation.
 - Adds a simple finance RAG over `data/all_transactions.csv` for instant, exact answers to transaction queries.
 
 Stack choices and why
@@ -17,7 +18,7 @@ Stack choices and why
 - Sentence-Transformers: pragmatic embeddings with cosine similarity; fast to stand up without a vector DB.
 - Rich + Typer: delightful DX for terminals (structured CLI, progress bars, live streaming panels) with minimal overhead.
 - Pandas (RAG): lightweight analytics over CSV for a realistic “hybrid intelligence” demo without extra infra.
-- uv + Torch nightly wheels: reproducible, fast installs; access to latest CUDA kernels while keeping the option to pin stable.
+- uv + PyTorch 2.8.0: reproducible, fast installs with stable PyTorch release for reliability and security.
 
 Design principles
 - OpenAI compatibility first to reduce integration friction.
@@ -28,12 +29,12 @@ Design principles
 
 ## Hardware Requirements
 
-- OS and Runtime: Linux recommended; Python 3.12+. Works on macOS (CPU) and Windows WSL2 as well.
+- OS and Runtime: Linux recommended; Python 3.13+ (upgraded for optimal performance). Works on macOS (CPU) and Windows WSL2 as well.
 - CPU-only: Supported for development and tests; expect slow generation. Use tiny models (e.g., `sshleifer/tiny-gpt2`).
 - NVIDIA GPU (recommended):
   - VRAM: ~14–16 GB for 7B models at FP16/BF16; multi-GPU sharding supported via `device_map="auto"`.
   - BF16 support: Ampere or newer (RTX 30/40, A100/A10, H100). Otherwise FP16 is used.
-  - Drivers/CUDA: Recent CUDA-capable driver. Project defaults target cu130 nightly wheels (see `pyproject.toml`); you can switch to stable wheels if preferred.
+  - Drivers/CUDA: Recent CUDA-capable driver. Project uses PyTorch 2.8.0 with CUDA 12.8 support.
 - Disk: 10–20 GB per 7B model; mount/cache Hugging Face downloads for faster cold starts (see Docker section).
 - Network: Internet required on first run to pull models/tokenizers from Hugging Face Hub.
 - Docker GPU: Install `nvidia-container-toolkit` and run with `--gpus all` to pass through GPUs.
@@ -117,6 +118,12 @@ curl -N -s -X POST http://localhost:8000/v1/chat/completions \
 curl -s -X POST http://localhost:8000/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{"input":"hello world","model":"google/embeddinggemma-300m"}'
+
+# Text-to-Speech (NEW!)
+curl -X POST http://localhost:8000/v1/tts \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Welcome to AI Labs TTS system!"}' \
+  --output welcome.wav
 ```
 
 ---

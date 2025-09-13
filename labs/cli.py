@@ -16,7 +16,6 @@ from labs import HFGenerator
 from labs.config import load_config
 from labs.ui import ui, is_terminal_capable
 from labs.interactive import InteractiveCLI
-from labs.tts import get_tts_instance
 
 
 def _parse_messages(raw: str) -> List[Dict[str, str]]:
@@ -516,6 +515,19 @@ def main(argv: Optional[List[str]] = None) -> int:
                 ui.error_panel("No input text provided for TTS")
             else:
                 print("Error: No input text provided for TTS", file=sys.stderr)
+            return 2
+
+        # Lazy import TTS only when needed
+        try:
+            from labs.tts import get_tts_instance
+        except Exception as e:
+            if use_ui:
+                ui.error_panel(
+                    f"Failed to initialize TTS module: {e}",
+                    "Ensure TTS dependencies are installed or switch to non-TTS mode"
+                )
+            else:
+                print(f"Error: Failed to initialize TTS module: {e}", file=sys.stderr)
             return 2
 
         tts = get_tts_instance()
